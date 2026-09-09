@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "@/app/globals.css";
+import "./style.css";
 
 export const metadata: Metadata = {
   title: "HealthPulse CDS",
