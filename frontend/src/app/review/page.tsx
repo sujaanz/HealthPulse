@@ -32,7 +32,7 @@ export default function ReviewPage() {
   const finalizeCase = async () => {
     setSaving(true);
     try {
-      await axios.post("http://localhost:8000/api/encounters/finalize", {
+      await axios.post("https://healthpulse-4d9z.onrender.com/api/encounters/finalize", {
         patient_id: data.patient_id,
         doctor_name: "Dr. Ballav",
         raw_narrative: data.raw_narrative,

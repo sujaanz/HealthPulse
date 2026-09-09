@@ -406,7 +406,7 @@ export default function HealthPulseSystem() {
     const extractedKeywords = parseClinicalKeywords(combinedNotes);
 
     try {
-      const res = await axios.post("http://localhost:8000/api/clinical/analyze", { patient_id: 1, narrative: combinedNotes, language: "en-IN" }, { timeout: 2000 });
+      const res = await axios.post("https://healthpulse-4d9z.onrender.com/api/clinical/analyze", { patient_id: 1, narrative: combinedNotes, language: "en-IN" }, { timeout: 2000 });
       if (res.data) {
         setAiData((prev) => ({
           ...prev,
@@ -439,7 +439,7 @@ export default function HealthPulseSystem() {
 
   const handleFinalizeCase = async () => {
     try {
-      await axios.post("http://localhost:8000/api/encounters/finalize", {
+      await axios.post("https://healthpulse-4d9z.onrender.com/api/encounters/finalize", {
         patient_id: 1, raw_narrative: tabNotes["Chief Complaint"], structured_info: aiData,
         missing_information: { elements: aiData.missingInfo }, decision_support: { diagnosis: aiData.provisionalDiagnosis, treatment: aiData.treatmentPlan }
       }, { timeout: 2000 });
@@ -705,7 +705,7 @@ export default function HealthPulseSystem() {
             </div>
             <div className="flex justify-between items-end pt-8 border-t">
               <div className="flex items-center gap-3">
-                <div className="p-2 border rounded-lg bg-white shadow-xs"><QRCodeSVG value={`http://localhost:3000`} size={64} /></div>
+                <div className="p-2 border rounded-lg bg-white shadow-xs"><QRCodeSVG value={`https://healthpulse-4d9z.onrender.com`} size={64} /></div>
                 <div className="text-[10px] text-slate-400 leading-tight"><p className="font-bold text-slate-500">Digitally Verified EHR</p><p>Scan to verify authenticity on ABDM registry.</p></div>
               </div>
               <div className="text-center"><p className="font-serif italic text-base mb-0.5 text-blue-500">Dr. Ananya</p><p className="font-bold text-xs">Dr. Ananya Sharma</p></div>
@@ -1498,7 +1498,7 @@ export default function HealthPulseSystem() {
                 </div>
                 <div className="flex justify-between items-end pt-8 border-t border-slate-500/20">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 border border-slate-200 rounded-lg bg-white shadow-xs"><QRCodeSVG value={`http://localhost:3000`} size={64} /></div>
+                    <div className="p-2 border border-slate-200 rounded-lg bg-white shadow-xs"><QRCodeSVG value={`https://healthpulse-4d9z.onrender.com`} size={64} /></div>
                     <div className="text-[10px] text-slate-400 leading-tight"><p className="font-bold text-slate-500">Scan to Access Digital EHR</p><p>View prescription &amp; dosage alarms on smartphone.</p></div>
                   </div>
                   <div className="text-center">

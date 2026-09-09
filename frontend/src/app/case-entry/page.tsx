@@ -16,7 +16,7 @@ export default function CaseEntryPage() {
 
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:8000/api/clinical/analyze", {
+      const res = await axios.post("https://healthpulse-4d9z.onrender.com/api/clinical/analyze", {
         patient_id: 1,
         narrative,
         language
@@ -29,7 +29,7 @@ export default function CaseEntryPage() {
       }));
       router.push("/review");
     } catch (err) {
-      alert("Error connecting to backend API (http://localhost:8000). Check if backend is running.");
+      alert("Error connecting to backend API (https://healthpulse-4d9z.onrender.com). Check if backend is running.");
       console.error(err);
     } finally {
       setLoading(false);
