@@ -51,7 +51,7 @@ export default function SpeechInput({ language, onTranscriptChange }: SpeechProp
     <button
       type="button"
       onClick={toggleListening}
-      className={`px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 ${
+      className={`w-full sm:w-auto px-4 py-2.5 md:py-2 text-sm md:text-base rounded-lg font-medium transition flex items-center justify-center gap-2 ${
         listening 
           ? "bg-red-600 text-white animate-pulse" 
           : "bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100"
