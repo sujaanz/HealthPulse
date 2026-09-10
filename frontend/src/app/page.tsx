@@ -41,10 +41,10 @@ export default function HealthPulseSystem() {
     }
   ];
 
-  // Core State
   const [darkMode, setDarkMode] = useState(false);
   const [patientList, setPatientList] = useState<any[]>(initialPatients);
   const [selectedPatient, setSelectedPatient] = useState<any>(initialPatients[1]);
+  const [doctorEmergencyAlert, setDoctorEmergencyAlert] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -68,7 +68,6 @@ export default function HealthPulseSystem() {
     catch (e) { console.error(e); }
   };
 
-  // Auth State
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [authRoleTab, setAuthRoleTab] = useState<"doctor" | "patient" | "admin">("doctor");
@@ -77,12 +76,10 @@ export default function HealthPulseSystem() {
   const [authError, setAuthError] = useState("");
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  // Screen Navigation (Expanded for Admin)
   const [currentScreen, setCurrentScreen] = useState<
     "dashboard" | "patients" | "registration" | "casetaking" | "suggestions" | "history" | "report" | "appointments" | "settings" | "audit" | "patient-portal" | "patient-view-rx" | "login" | "signup" | "forgot-password" | "user-management" | "profile" | "inventory" | "bed-management" | "announcements"
   >("login");
 
-  // Signup & Admin States
   const [signupRole, setSignupRole] = useState("patient");
   const [pendingDoctors, setPendingDoctors] = useState([
     { id: "REQ-001", name: "Dr. Vikram Singh", spec: "Neurologist", reg: "WBMC-55441", date: "Today", status: "Pending" },
@@ -91,40 +88,31 @@ export default function HealthPulseSystem() {
   const [bookDoctor, setBookDoctor] = useState("");
   const [globalAnnouncement, setGlobalAnnouncement] = useState("");
 
-  // Multilingual Rx State (bn / hi / en)
   const [rxLanguage, setRxLanguage] = useState<"en" | "bn" | "hi">("bn");
   const [patientPortalLang, setPatientPortalLang] = useState<"en" | "bn" | "hi">("bn");
   const [isSpeakingRx, setIsSpeakingRx] = useState(false);
 
-  // Modals State
+  // Modals
   const [showXRayModal, setShowXRayModal] = useState(false);
   const [xRayScanning, setXRayScanning] = useState(false);
   const [xRayResult, setXRayResult] = useState<any>(null);
-
   const [showNurseBotModal, setShowNurseBotModal] = useState(false);
-  const [nurseMessages, setNurseMessages] = useState([
-    { sender: "bot", text: "Hello! I am your HealthPulse AI Nurse. How is your fever today? Any headache or nausea?" }
-  ]);
+  const [nurseMessages, setNurseMessages] = useState([{ sender: "bot", text: "Hello! I am your HealthPulse AI Nurse. How is your fever today? Any headache or nausea?" }]);
   const [nurseInput, setNurseInput] = useState("");
-
   const [showHealthCardModal, setShowHealthCardModal] = useState(false);
   const [showTeleModal, setShowTeleModal] = useState(false);
-  const [teleVideoMuted, setTeleVideoMuted] = useState(false);
   const [showQrCheckinModal, setShowQrCheckinModal] = useState(false);
   const [qrScanning, setQrScanning] = useState(false);
   const [showTrendsModal, setShowTrendsModal] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  // Patient Modals
   const [showReminderModal, setShowReminderModal] = useState(false);
   const [showBookModal, setShowBookModal] = useState(false);
   const [showLabModal, setShowLabModal] = useState(false);
+  
   const [reminderToggles, setReminderToggles] = useState({ morning: true, afternoon: true, night: false });
   const [bookDate, setBookDate] = useState("2024-06-20");
   const [bookTime, setBookTime] = useState("10:30 AM");
 
-  // Vitals & NEWS2 Triage
   const [vitals, setVitals] = useState({
     temperature: 100.4, pulse: 98, bpSystolic: 120, bpDiastolic: 80, respiratoryRate: 18, oxygenSaturation: 98
   });
@@ -133,10 +121,8 @@ export default function HealthPulseSystem() {
     let score = 0;
     if (vitals.temperature > 102 || vitals.temperature < 96) score += 2;
     else if (vitals.temperature > 100.4) score += 1;
-
     if (vitals.pulse > 110 || vitals.pulse < 50) score += 2;
     else if (vitals.pulse > 95) score += 1;
-
     if (vitals.bpSystolic < 100 || vitals.bpSystolic > 160) score += 2;
     if (vitals.oxygenSaturation < 94) score += 3;
 
@@ -147,21 +133,18 @@ export default function HealthPulseSystem() {
 
   const currentTriage = calculateTriage();
 
-  // Speaker Diarization
   const [dialogueMode, setDialogueMode] = useState(false);
   const [dialogues] = useState([
     { speaker: "Doctor", text: "How long have you had this fever, and is there any body pain?" },
     { speaker: "Patient", text: "Since 3 days doctor. Severe headache, bodyache and feeling weakness. No cough." }
   ]);
 
-  // Differential Matrix
   const differentialMatrix = [
     { disease: "Acute Dengue Infection", probability: 78, icd: "1D20", rationale: "High fever + Retro-orbital headache + Thrombocytopenia" },
     { disease: "Chikungunya Fever", probability: 14, icd: "1D21", rationale: "Intense symmetrical myalgia/arthralgia" },
     { disease: "Viral Pharyngitis", probability: 8, icd: "1C62", rationale: "Absence of significant lower respiratory symptoms" }
   ];
 
-  // Generic Substitutes Matrix
   const [inventoryList, setInventoryList] = useState([
     { id: "MED-01", brand: "Dolo 650 (Paracetamol)", generic: "Tab. Paracetamol IP 650mg", stock: 420, price: "₹9.50" },
     { id: "MED-02", brand: "Pantocid 40 (Pantoprazole)", generic: "Cap. Pantoprazole 40mg", stock: 180, price: "₹28.00" },
@@ -174,7 +157,6 @@ export default function HealthPulseSystem() {
     generic: item.generic, genericPrice: item.price, savings: "High Cost Saving", stock: `In Stock (${item.stock} units)`
   }));
 
-  // Hospital Beds Mock Data
   const [bedStatus, setBedStatus] = useState([
     { id: "ICU-01", type: "ICU", status: "Occupied", patient: "PID-2024-00124" },
     { id: "ICU-02", type: "ICU", status: "Available", patient: null },
@@ -183,7 +165,6 @@ export default function HealthPulseSystem() {
     { id: "EMR-01", type: "Emergency", status: "Available", patient: null },
   ]);
 
-  // Trends
   const historicalTrends = [
     { date: "Day 1", platelets: 210, temp: 102.0 },
     { date: "Day 2", platelets: 180, temp: 101.4 },
@@ -192,7 +173,6 @@ export default function HealthPulseSystem() {
     { date: "Day 5 (Today)", platelets: 195, temp: 98.6 }
   ];
 
-  // Signature Canvas & Handlers
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
@@ -217,7 +197,6 @@ export default function HealthPulseSystem() {
     ctx.clearRect(0, 0, canvas.width, canvas.height); setHasSignature(false);
   };
 
-  // Prescription Builder Sync
   const [rxBuilder, setRxBuilder] = useState({
     diagnosis: "Viral Pyrexia (ICD-11: 1D20)",
     medicines: [{ name: "Tab. Paracetamol 650mg", dose: "1-1-1 (TDS)", duration: "3 days", instructions: "After food" }]
@@ -245,12 +224,10 @@ export default function HealthPulseSystem() {
     showToast("FHIR R4 JSON exported successfully!");
   };
 
-  // New Patient Form
   const [newPatientForm, setNewPatientForm] = useState({
     fullName: "", gender: "Female", dob: "1998-01-01", age: "26", abhaId: "", phone: "", email: "", allergies: "", chronicConditions: ""
   });
 
-  // Clinical Sub-tabs & Notes Map
   const clinicalTabs = [
     "Chief Complaint", "History of Present Illness", "Past Medical History", "Medications",
     "Allergies", "Family History", "Social History", "Review of Systems", "Examination",
@@ -271,7 +248,6 @@ export default function HealthPulseSystem() {
     "Notes & Plan": "Hydration, antipyretics, review after 3 days."
   });
 
-  // Dictation State
   const [inputMode, setInputMode] = useState<"Type" | "Speak">("Speak");
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
@@ -304,7 +280,6 @@ export default function HealthPulseSystem() {
     ]
   });
 
-  // Multilingual Rx Translations
   const rxTranslations = {
     en: {
       diagnosis: aiData.provisionalDiagnosis,
@@ -327,26 +302,57 @@ export default function HealthPulseSystem() {
     }
   };
 
-  const speakRx = () => {
+  const speakDoctorRx = () => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
       showToast("Speech synthesis not supported in this browser."); return;
     }
     if (isSpeakingRx) { window.speechSynthesis.cancel(); setIsSpeakingRx(false); return; }
     const utterance = new SpeechSynthesisUtterance(rxTranslations[rxLanguage].speech);
     utterance.lang = rxLanguage === "bn" ? "bn-IN" : rxLanguage === "hi" ? "hi-IN" : "en-IN";
-    utterance.rate = 0.9; utterance.onend = () => setIsSpeakingRx(false); utterance.onerror = () => setIsSpeakingRx(false);
+    utterance.rate = 0.9; 
+    utterance.onend = () => setIsSpeakingRx(false); 
+    utterance.onerror = () => setIsSpeakingRx(false);
     window.speechSynthesis.speak(utterance); setIsSpeakingRx(true);
     showToast(`Reading prescription out loud in ${rxLanguage.toUpperCase()}!`);
   };
 
-  // System Settings Switches
+  const playPatientRxAudio = () => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      alert("Sorry, your browser does not support text-to-speech."); return;
+    }
+    if (isSpeakingRx) { window.speechSynthesis.cancel(); setIsSpeakingRx(false); return; }
+    
+    const rx = rxTranslations[patientPortalLang]; 
+    const pName = selectedPatient?.fullName || "Patient";
+    let textToRead = ""; let langCode = "en-IN";
+    
+    if (patientPortalLang === "bn") { 
+      textToRead = `নমস্কার ${pName}। আপনার রোগ নির্ণয় হলো: ${rx.diagnosis}। ওষুধের নিয়মাবলি হলো: ${rx.plan.join("। ")}। দ্রুত সুস্থ হয়ে উঠুন।`; 
+      langCode = "bn-IN"; 
+    } else if (patientPortalLang === "hi") { 
+      textToRead = `नमस्ते ${pName}। आपकी बीमारी है: ${rx.diagnosis}। आपका इलाज है: ${rx.plan.join("। ")}। जल्दी ठीक हो जाईये।`; 
+      langCode = "hi-IN"; 
+    } else { 
+      textToRead = `Hello ${pName}. Your diagnosis is: ${rx.diagnosis}. Your treatment plan is: ${rx.plan.join(". ")}. Get well soon.`; 
+      langCode = "en-IN"; 
+    }
+    
+    const utterance = new SpeechSynthesisUtterance(textToRead); 
+    utterance.rate = 0.85; 
+    utterance.lang = langCode; 
+    utterance.onend = () => setIsSpeakingRx(false);
+    utterance.onerror = () => setIsSpeakingRx(false);
+
+    window.speechSynthesis.speak(utterance);
+    setIsSpeakingRx(true);
+  };
+
   const [moduleSettings, setModuleSettings] = useState({
     aiCaseSummary: true, cds: true, multilingual: true, icd11Coder: true, drugInteraction: true, auditLogging: true
   });
   const [aiModelVersion, setAiModelVersion] = useState("HealthPulse v2.1 (Clinical Gemini Fine-tuned)");
   const [confidenceThreshold, setConfidenceThreshold] = useState(85);
 
-  // Role Permissions
   const [permissions, setPermissions] = useState({
     Doctor: { view: true, edit: true, generateData: true, generateReport: true },
     Staff: { view: true, edit: false, generateData: false, generateReport: false },
@@ -355,7 +361,6 @@ export default function HealthPulseSystem() {
     Admin: { view: true, edit: true, generateData: true, generateReport: true }
   });
 
-  // Audit Logs
   const [auditSearch, setAuditSearch] = useState("");
   const [auditRoleFilter, setAuditRoleFilter] = useState("All");
   const [auditLogs, setAuditLogs] = useState([
@@ -366,11 +371,9 @@ export default function HealthPulseSystem() {
     { action: "Instant QR Kiosk Check-In", user: "Reception Desk", role: "Staff", patientId: "PID-2024-00124", time: "Today, 09:30 AM" }
   ]);
 
-  // Toast
   const [toastMessage, setToastMessage] = useState("");
   const showToast = (msg: string) => { setToastMessage(msg); setTimeout(() => setToastMessage(""), 3500); };
 
-  // Speech Recognition Setup
   useEffect(() => {
     if (typeof window !== "undefined" && ("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -399,7 +402,6 @@ export default function HealthPulseSystem() {
     }
   };
 
-  // Safe AI Analysis Handler
   const handleRunAI = async () => {
     setLoadingAI(true);
     const combinedNotes = clinicalTabs.map((t) => `${t}: ${tabNotes[t]}`).join("\n");
@@ -447,7 +449,6 @@ export default function HealthPulseSystem() {
     showToast("Case Saved to EHR & ABHA Registry!"); setCurrentScreen("report");
   };
 
-  // X-Ray Analysis Simulator
   const handleXRayScan = (e: any) => {
     const file = e.target.files?.[0]; if (!file) return;
     setXRayScanning(true); setXRayResult(null);
@@ -463,21 +464,23 @@ export default function HealthPulseSystem() {
     }, 2000);
   };
 
-  // AI Nurse Bot Response Handler
   const handleNurseSend = (e: React.FormEvent) => {
     e.preventDefault(); if (!nurseInput.trim()) return;
-    const userText = nurseInput; setNurseMessages((prev) => [...prev, { sender: "patient", text: userText }]); setNurseInput("");
+    const userText = nurseInput.toLowerCase(); 
+    setNurseMessages((prev) => [...prev, { sender: "patient", text: nurseInput }]); 
+    setNurseInput("");
+    
     setTimeout(() => {
       let botReply = "Thank you for the update. Keep taking your prescribed medicines and drink plenty of ORS water.";
-      if (userText.toLowerCase().includes("fever") || userText.toLowerCase().includes("vomit") || userText.toLowerCase().includes("pain")) {
-        botReply = "⚠️ Warning: Persistent fever or nausea detected. An emergency alert has been sent to Dr. Ananya Sharma's OPD dashboard.";
+      if (userText.includes("fever") || userText.includes("vomit") || userText.includes("pain") || userText.includes("bad")) {
+        botReply = "⚠️ Warning: Persistent symptoms detected. An emergency alert has been sent to Dr. Ananya Sharma's OPD dashboard.";
         showToast("Relapse Alert Sent to Attending Physician!");
+        setDoctorEmergencyAlert(`${selectedPatient?.fullName || "A Patient"} reported: "${userText}"`);
       }
       setNurseMessages((prev) => [...prev, { sender: "bot", text: botReply }]);
     }, 1000);
   };
 
-  // QR Check-in Simulator
   const handleSimulateQrScan = () => {
     setQrScanning(true);
     setTimeout(() => {
@@ -488,7 +491,6 @@ export default function HealthPulseSystem() {
     }, 1500);
   };
 
-  // Auth Handlers
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault(); setAuthError("");
     const demoCredentials: { [key: string]: { email: string; pass: string; role: string; name: string } } = {
@@ -521,6 +523,20 @@ export default function HealthPulseSystem() {
     showToast(`Patient ${newEntry.fullName} added successfully! Starting case...`); setCurrentScreen("casetaking");
   };
 
+  const handlePatientBooking = () => {
+    if(!bookDoctor) return showToast("Please select a doctor");
+    const newAppointment = {
+      ...selectedPatient,
+      appointmentTime: bookTime,
+      recentDiagnosis: "Follow-up",
+      triageStatus: "Stable"
+    };
+    const updated = [newAppointment, ...patientList];
+    updatePatientsPersistence(updated);
+    setShowBookModal(false); 
+    showToast(`Appointment booked with ${bookDoctor.split('-')[0]}! Added to Doctor's Queue.`);
+  };
+
   const handleStartCaseForPatient = (pat: any) => {
     setSelectedPatient(pat); const patIsChild = parseInt(pat.age || "25") < 12;
     setTabNotes({
@@ -544,7 +560,7 @@ export default function HealthPulseSystem() {
   const headerTheme = darkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200";
 
   // =========================================================================
-  // 1. AUTHENTICATION & ONBOARDING SCREENS
+  // 1. AUTHENTICATION SCREENS
   // =========================================================================
   if (!isLoggedIn) {
     if (currentScreen === "signup") {
@@ -660,17 +676,6 @@ export default function HealthPulseSystem() {
   // =========================================================================
   if (currentUser?.role === "patient") {
     if (currentScreen === "patient-view-rx") {
-      const playPrescriptionAudio = () => {
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel(); const rx = rxTranslations[patientPortalLang]; const pName = selectedPatient?.fullName || "Patient";
-          let textToRead = ""; let langCode = "en-IN";
-          if (patientPortalLang === "bn") { textToRead = `নমস্কার ${pName}। আপনার রোগ নির্ণয় হলো: ${rx.diagnosis}। ওষুধের নিয়মাবলি হলো: ${rx.plan.join("। ")}। দ্রুত সুস্থ হয়ে উঠুন।`; langCode = "bn-IN"; } 
-          else if (patientPortalLang === "hi") { textToRead = `नमस्ते ${pName}। आपकी बीमारी है: ${rx.diagnosis}। आपका इलाज है: ${rx.plan.join("। ")}। जल्दी ठीक हो जाईये।`; langCode = "hi-IN"; } 
-          else { textToRead = `Hello ${pName}. Your diagnosis is: ${rx.diagnosis}. Your treatment plan is: ${rx.plan.join(". ")}. Get well soon.`; langCode = "en-IN"; }
-          const utterance = new SpeechSynthesisUtterance(textToRead); utterance.rate = 0.85; utterance.lang = langCode; window.speechSynthesis.speak(utterance);
-        } else { alert("Sorry, your browser does not support text-to-speech."); }
-      };
-
       return (
         <div className={`min-h-screen p-4 md:p-6 font-sans ${themeClass}`}>
           <div className={`max-w-4xl mx-auto mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 rounded-2xl border shadow-sm ${cardTheme}`}>
@@ -684,7 +689,11 @@ export default function HealthPulseSystem() {
               </div>
               <button onClick={() => window.print()} className="text-xs font-semibold py-2 px-4 rounded-xl border hover:bg-slate-500/10 flex items-center gap-2"><Printer size={15} /> Print</button>
               <button onClick={() => window.print()} className="text-xs font-semibold py-2 px-4 rounded-xl bg-[#0B4EA2] text-white hover:bg-blue-700 flex items-center gap-2"><Download size={15} /> Download PDF</button>
-              <button onClick={playPrescriptionAudio} className="text-xs font-semibold py-2 px-4 rounded-xl bg-purple-100 text-purple-700 hover:bg-purple-200 flex items-center gap-2 transition shadow-sm"><Volume2 size={15} /> Listen</button>
+              {/* UPDATED LISTEN BUTTON FOR PATIENT */}
+              <button onClick={playPatientRxAudio} className={`text-xs font-semibold py-2 px-4 rounded-xl flex items-center gap-2 transition shadow-sm ${isSpeakingRx ? "bg-red-100 text-red-700 hover:bg-red-200 border border-red-200" : "bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-200"}`}>
+                {isSpeakingRx ? <Square size={15} /> : <Volume2 size={15} />} 
+                {isSpeakingRx ? "Stop Reading" : "Listen"}
+              </button>
             </div>
           </div>
           <div className={`max-w-4xl mx-auto p-4 md:p-8 rounded-2xl border shadow-md printable-sheet space-y-5 ${cardTheme}`}>
@@ -718,7 +727,9 @@ export default function HealthPulseSystem() {
     return (
       <div className={`min-h-screen font-sans antialiased ${themeClass}`}>
         <header className={`h-auto md:h-16 py-3 md:py-0 border-b px-4 md:px-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-xs ${headerTheme}`}>
-          <div className="flex items-center gap-2 font-bold text-lg text-[#0B4EA2]"><Activity /> HealthPulse • Patient Portal</div>
+          <div className="flex items-center gap-2 font-bold text-lg text-[#0B4EA2]">
+            <Activity /> HealthPulse • Patient Portal
+          </div>
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-1.5 text-xs">
               <span className="text-slate-400 font-bold hidden md:inline">Language:</span>
@@ -747,13 +758,29 @@ export default function HealthPulseSystem() {
                 </div>
               </div>
 
-              <div className={`rounded-2xl border p-4 md:p-6 shadow-sm space-y-2.5 ${cardTheme}`}>
-                <h4 className="font-bold text-xs uppercase tracking-wider mb-1">Quick Actions</h4>
-                <button onClick={() => setCurrentScreen("patient-view-rx")} className="w-full text-left p-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 font-semibold flex items-center justify-between transition text-xs"><span>📄 View Digital Prescription</span><ChevronRight size={14} /></button>
-                <button onClick={() => setShowHealthCardModal(true)} className="w-full text-left p-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 font-semibold flex items-center justify-between transition text-xs"><span>💳 Digital Health ID Card</span><ChevronRight size={14} /></button>
-                <button onClick={() => setShowNurseBotModal(true)} className="w-full text-left p-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 font-semibold flex items-center justify-between transition text-xs"><span>🤖 AI Nurse Follow-Up Bot</span><ChevronRight size={14} /></button>
-                <button onClick={() => setShowReminderModal(true)} className="w-full text-left p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 font-semibold flex items-center justify-between transition text-xs"><span>⏰ Medication Reminders</span><ChevronRight size={14} /></button>
-                <button onClick={() => setShowBookModal(true)} className="w-full text-left p-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 font-semibold flex items-center justify-between transition text-xs"><span>📅 Book Follow-Up</span><ChevronRight size={14} /></button>
+              {/* QUICK ACTIONS MENU WITHOUT PAYMENT */}
+              <div className={`rounded-2xl border p-4 md:p-6 shadow-sm space-y-3 ${cardTheme}`}>
+                <h4 className="font-bold text-xs uppercase tracking-wider mb-2 text-slate-500">Quick Actions</h4>
+                
+                <button onClick={() => setCurrentScreen("patient-view-rx")} className="w-full p-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 font-bold flex items-center justify-between transition text-xs border border-blue-500/10">
+                  <span className="flex items-center gap-2.5"><FileText size={16} /> View Digital Prescription</span><ChevronRight size={14} />
+                </button>
+                
+                <button onClick={() => setShowHealthCardModal(true)} className="w-full p-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 font-bold flex items-center justify-between transition text-xs border border-amber-500/10">
+                  <span className="flex items-center gap-2.5"><CreditCard size={16} /> Digital Health ID Card</span><ChevronRight size={14} />
+                </button>
+                
+                <button onClick={() => setShowNurseBotModal(true)} className="w-full p-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 font-bold flex items-center justify-between transition text-xs border border-purple-500/10">
+                  <span className="flex items-center gap-2.5"><Bot size={16} /> AI Nurse Follow-Up Bot</span><ChevronRight size={14} />
+                </button>
+                
+                <button onClick={() => setShowReminderModal(true)} className="w-full p-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 font-bold flex items-center justify-between transition text-xs border border-emerald-500/10">
+                  <span className="flex items-center gap-2.5"><Activity size={16} /> Medication Reminders</span><ChevronRight size={14} />
+                </button>
+                
+                <button onClick={() => setShowBookModal(true)} className="w-full p-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 font-bold flex items-center justify-between transition text-xs border border-rose-500/10">
+                  <span className="flex items-center gap-2.5"><Calendar size={16} /> Book Follow-Up</span><ChevronRight size={14} />
+                </button>
               </div>
             </div>
 
@@ -875,7 +902,7 @@ export default function HealthPulseSystem() {
                   </div>
                 </div>
               </div>
-              <button onClick={() => { if(!bookDoctor) return showToast("Please select a doctor"); setShowBookModal(false); showToast(`Appointment booked with ${bookDoctor.split('-')[0]}!`); }} className="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs hover:bg-emerald-700 transition">Confirm Appointment</button>
+              <button onClick={handlePatientBooking} className="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs hover:bg-emerald-700 transition">Confirm Appointment</button>
             </div>
           </div>
         )}
@@ -898,7 +925,7 @@ export default function HealthPulseSystem() {
   }
 
   // =========================================================================
-  // 4. DOCTOR / ADMIN / SHARED PROFILE WORKSPACE
+  // 3. DOCTOR / ADMIN / SHARED WORKSPACE
   // =========================================================================
   return (
     <div className={`flex flex-col md:flex-row h-screen font-sans antialiased overflow-hidden ${themeClass}`}>
@@ -943,8 +970,7 @@ export default function HealthPulseSystem() {
           </nav>
         </div>
 
-        {/* প্রোফাইল ও লগ-আউট অপশন মোবাইলে স্ক্রিনের নিচে ফিক্সড করে দেওয়া হয়েছে */}
-        <div className="fixed bottom-0 left-0 right-0 z-50 md:relative md:z-auto p-3 md:p-4 border-t border-blue-800 bg-[#083D80] flex items-center justify-between w-full shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-none">
+        <div className="p-3 md:p-4 border-t border-blue-800 bg-[#083D80] flex items-center justify-between w-full hidden md:flex">
           <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setCurrentScreen("profile")}>
             <div className="w-9 h-9 rounded-full bg-blue-200 text-[#0B4EA2] font-bold flex items-center justify-center text-sm border-2 border-white shadow-sm">{currentUser?.name?.charAt(0) || "U"}</div>
             <div><p className="text-xs font-bold leading-tight hover:underline">{currentUser?.name || "User"}</p><p className="text-[10px] text-blue-300 capitalize">{currentUser?.role}</p></div>
@@ -953,8 +979,26 @@ export default function HealthPulseSystem() {
         </div>
       </aside>
 
-      {/* মোবাইলের প্রোফাইল বারের জন্য নিচে pb-20 প্যাডিং দেওয়া হয়েছে */}
-      <main className="flex-1 flex flex-col overflow-y-auto pb-20 md:pb-0">
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden p-3 border-t border-blue-800 bg-[#083D80] flex items-center justify-between w-full shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setCurrentScreen("profile")}>
+          <div className="w-9 h-9 rounded-full bg-blue-200 text-[#0B4EA2] font-bold flex items-center justify-center text-sm border-2 border-white shadow-sm">{currentUser?.name?.charAt(0) || "U"}</div>
+          <div><p className="text-xs font-bold leading-tight hover:underline">{currentUser?.name || "User"}</p><p className="text-[10px] text-blue-300 capitalize">{currentUser?.role}</p></div>
+        </div>
+        <button onClick={() => { setIsLoggedIn(false); setCurrentUser(null); setCurrentScreen("login"); }} className="text-blue-300 hover:text-white"><LogOut size={16} /></button>
+      </div>
+
+      <main className="flex-1 flex flex-col overflow-y-auto pb-20 md:pb-0 relative">
+        {currentUser?.role === "doctor" && doctorEmergencyAlert && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-40 bg-red-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-red-400 animate-bounce">
+            <AlertTriangle size={24} className="text-yellow-300" />
+            <div>
+              <p className="text-sm font-black uppercase tracking-wider">🚨 Emergency Relapse Alert</p>
+              <p className="text-xs font-medium">{doctorEmergencyAlert}</p>
+            </div>
+            <button onClick={() => setDoctorEmergencyAlert(null)} className="ml-4 p-1 hover:bg-red-500 rounded-lg transition"><X size={16} /></button>
+          </div>
+        )}
+
         <header className={`h-auto md:h-16 py-3 md:py-0 border-b px-4 md:px-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-0 flex-shrink-0 shadow-xs no-print ${headerTheme}`}>
           <div>
             <h2 className="text-sm md:text-base font-bold">{currentUser?.role === "admin" ? "HealthPulse Governance Desk" : "HealthPulse Clinical Decision Support"}</h2>
@@ -974,7 +1018,7 @@ export default function HealthPulseSystem() {
           </div>
         </header>
 
-        {/* ADMIN DASHBOARD (NEW) */}
+        {/* ADMIN DASHBOARD */}
         {currentScreen === "dashboard" && currentUser?.role === "admin" && (
           <div className="p-4 md:p-6 space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1103,10 +1147,9 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* ADMIN: USER MANAGEMENT (MERGED APPROVALS & ACTIVE USERS) */}
+        {/* ADMIN: USER MANAGEMENT */}
         {currentScreen === "user-management" && currentUser?.role === "admin" && (
           <div className="p-4 md:p-6 space-y-6">
-            {/* Pending Approvals Table */}
             <div className={`max-w-6xl mx-auto rounded-2xl border shadow-sm p-4 md:p-6 space-y-5 ${cardTheme}`}>
               <div>
                 <h3 className="text-base font-bold text-amber-500 flex items-center gap-2"><UserCheck size={18}/> Doctor Registrations (Awaiting Approval)</h3>
@@ -1134,7 +1177,6 @@ export default function HealthPulseSystem() {
               </div>
             </div>
 
-            {/* Active Users Table */}
             <div className={`max-w-6xl mx-auto rounded-2xl border shadow-sm p-4 md:p-6 space-y-5 ${cardTheme}`}>
               <div>
                 <h3 className="text-base font-bold flex items-center gap-2"><Users size={18}/> Active Users Control</h3>
@@ -1258,7 +1300,7 @@ export default function HealthPulseSystem() {
                 />
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <p className="text-[10px] text-slate-400 flex items-center gap-1"><AlertTriangle size={12}/> This message will appear as a pop-up alert for all active users.</p>
-                  <button type="submit" className="w-full sm:w-auto px-6 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 shadow-sm flex justify-center items-center gap-2"><Send size={15}/> Send Alert Now</button>
+                  <button type="submit" className="w-full sm:w-auto px-6 py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 shadow-sm flex justify-center items-center gap-2"><Send size={15}/> Send Alert Now</button>
                 </div>
               </form>
             </div>
@@ -1322,15 +1364,30 @@ export default function HealthPulseSystem() {
                     </div>
                     <div>
                       <label className="block text-xs font-bold mb-2 text-slate-500">Medicines & Dosage</label>
-                      {rxBuilder.medicines.map((med, idx) => (
-                        <div key={idx} className="flex flex-col sm:flex-row gap-2 mb-3 sm:mb-2 border-b sm:border-0 pb-3 sm:pb-0 border-slate-500/20">
-                          <input type="text" placeholder="Medicine Name" value={med.name} onChange={e => { const newMeds = [...rxBuilder.medicines]; newMeds[idx].name = e.target.value; setRxBuilder({...rxBuilder, medicines: newMeds}); }} className={`w-full sm:flex-1 text-xs p-2 border rounded-lg focus:outline-none focus:border-blue-500 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} />
-                          <input type="text" placeholder="Dose (1-0-1)" value={med.dose} onChange={e => { const newMeds = [...rxBuilder.medicines]; newMeds[idx].dose = e.target.value; setRxBuilder({...rxBuilder, medicines: newMeds}); }} className={`w-full sm:w-24 text-xs p-2 border rounded-lg focus:outline-none focus:border-blue-500 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} />
-                          <input type="text" placeholder="Days" value={med.duration} onChange={e => { const newMeds = [...rxBuilder.medicines]; newMeds[idx].duration = e.target.value; setRxBuilder({...rxBuilder, medicines: newMeds}); }} className={`w-full sm:w-20 text-xs p-2 border rounded-lg focus:outline-none focus:border-blue-500 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} />
-                          <input type="text" placeholder="Notes (After food)" value={med.instructions} onChange={e => { const newMeds = [...rxBuilder.medicines]; newMeds[idx].instructions = e.target.value; setRxBuilder({...rxBuilder, medicines: newMeds}); }} className={`w-full sm:w-32 text-xs p-2 border rounded-lg focus:outline-none focus:border-blue-500 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} />
-                          <button onClick={() => { const newMeds = rxBuilder.medicines.filter((_, i) => i !== idx); setRxBuilder({...rxBuilder, medicines: newMeds}); }} className="p-2 text-red-500 hover:bg-red-50 rounded-lg flex items-center justify-center sm:w-auto w-full border border-red-500/20 sm:border-0"><XCircle size={16}/> <span className="sm:hidden ml-2 font-bold">Remove</span></button>
-                        </div>
-                      ))}
+                      {rxBuilder.medicines.map((med, idx) => {
+                        const isLowStock = inventoryList.some(inv => 
+                          (med.name.toLowerCase().includes(inv.brand.toLowerCase().split(' ')[0]) || 
+                           med.name.toLowerCase().includes(inv.generic.toLowerCase().split(' ')[0])) 
+                          && inv.stock < 20
+                        );
+
+                        return (
+                          <div key={idx} className="mb-3 sm:mb-2 border-b sm:border-0 pb-3 sm:pb-0 border-slate-500/20">
+                            <div className="flex flex-col sm:flex-row gap-2">
+                              <input type="text" placeholder="Medicine Name" value={med.name} onChange={e => { const newMeds = [...rxBuilder.medicines]; newMeds[idx].name = e.target.value; setRxBuilder({...rxBuilder, medicines: newMeds}); }} className={`w-full sm:flex-1 text-xs p-2 border rounded-lg focus:outline-none focus:border-blue-500 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'} ${isLowStock ? 'border-red-400 focus:border-red-500' : ''}`} />
+                              <input type="text" placeholder="Dose (1-0-1)" value={med.dose} onChange={e => { const newMeds = [...rxBuilder.medicines]; newMeds[idx].dose = e.target.value; setRxBuilder({...rxBuilder, medicines: newMeds}); }} className={`w-full sm:w-24 text-xs p-2 border rounded-lg focus:outline-none focus:border-blue-500 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} />
+                              <input type="text" placeholder="Days" value={med.duration} onChange={e => { const newMeds = [...rxBuilder.medicines]; newMeds[idx].duration = e.target.value; setRxBuilder({...rxBuilder, medicines: newMeds}); }} className={`w-full sm:w-20 text-xs p-2 border rounded-lg focus:outline-none focus:border-blue-500 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} />
+                              <input type="text" placeholder="Notes (After food)" value={med.instructions} onChange={e => { const newMeds = [...rxBuilder.medicines]; newMeds[idx].instructions = e.target.value; setRxBuilder({...rxBuilder, medicines: newMeds}); }} className={`w-full sm:w-32 text-xs p-2 border rounded-lg focus:outline-none focus:border-blue-500 ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} />
+                              <button onClick={() => { const newMeds = rxBuilder.medicines.filter((_, i) => i !== idx); setRxBuilder({...rxBuilder, medicines: newMeds}); }} className="p-2 text-red-500 hover:bg-red-50 rounded-lg flex items-center justify-center sm:w-auto w-full border border-red-500/20 sm:border-0"><XCircle size={16}/> <span className="sm:hidden ml-2 font-bold">Remove</span></button>
+                            </div>
+                            {isLowStock && (
+                              <p className="text-[10px] text-red-500 font-bold mt-1 flex items-center gap-1">
+                                <AlertTriangle size={10} /> ⚠️ Low Stock Warning: Limited units remaining in Admin Pharmacy Inventory!
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
                       <button onClick={() => setRxBuilder({...rxBuilder, medicines: [...rxBuilder.medicines, {name: "", dose: "", duration: "", instructions: ""}]})} className="text-xs text-blue-500 font-bold hover:underline flex items-center gap-1 mt-2"><Plus size={14}/> Add Medicine</button>
                     </div>
                     <div className="pt-4 border-t border-slate-500/20 flex justify-end">
@@ -1438,7 +1495,7 @@ export default function HealthPulseSystem() {
                       </button>
                     ))}
                   </div>
-                  <button onClick={speakRx} className={`w-full py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition ${isSpeakingRx ? "bg-red-500 text-white animate-pulse" : "bg-blue-500/10 text-blue-500 border border-blue-500/30 hover:bg-blue-500/20"}`}>
+                  <button onClick={speakDoctorRx} className={`w-full py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition ${isSpeakingRx ? "bg-red-500 text-white animate-pulse" : "bg-blue-500/10 text-blue-500 border border-blue-500/30 hover:bg-blue-500/20"}`}>
                     <Volume2 size={14} /><span>{isSpeakingRx ? "Stop Speaking" : "Read Prescription (Voice)"}</span>
                   </button>
                 </div>
@@ -1803,52 +1860,36 @@ export default function HealthPulseSystem() {
              </div>
           </div>
         )}
-
       </main>
 
-      {/* ALL MODALS */}
-
+      {/* DOCTOR/ADMIN MODALS */}
       {/* AI CHEST X-RAY MODAL */}
       {showXRayModal && (
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className={`rounded-3xl shadow-2xl max-w-lg w-full p-6 space-y-4 border ${cardTheme}`}>
             <div className="flex justify-between items-center border-b border-slate-500/20 pb-3">
-              <h3 className="font-bold text-sm flex items-center gap-2 text-cyan-500">
-                <Scan size={18} /> AI Chest X-Ray &amp; Pulmonary Vision
-              </h3>
-              <button onClick={() => setShowXRayModal(false)} className="text-slate-400 hover:text-slate-100">
-                <X size={18} />
-              </button>
+              <h3 className="font-bold text-sm flex items-center gap-2 text-cyan-500"><Scan size={18} /> AI Chest X-Ray &amp; Pulmonary Vision</h3>
+              <button onClick={() => setShowXRayModal(false)} className="text-slate-400 hover:text-slate-100"><X size={18} /></button>
             </div>
-
             <div className="border-2 border-dashed border-cyan-500/30 bg-cyan-500/5 rounded-2xl p-6 text-center flex flex-col items-center justify-center space-y-2 cursor-pointer hover:border-cyan-500 transition">
               <FileUp size={32} className="text-cyan-500" />
               <p className="text-xs font-bold">Upload Patient Chest Radiograph (X-Ray / CT)</p>
               <p className="text-[10px] text-slate-400">DICOM, JPEG, PNG supported</p>
               <input type="file" accept="image/*" onChange={handleXRayScan} className="text-xs mt-2 w-full md:w-auto file:mr-2 file:py-1 file:px-3 file:rounded-lg file:bg-cyan-500/20 file:text-cyan-600 file:border-0 cursor-pointer" />
             </div>
-
             {xRayScanning && (
               <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-xl flex items-center gap-2 text-cyan-500 text-xs">
-                <RefreshCw size={14} className="animate-spin flex-shrink-0" />
-                <span>Convolutional Neural Net scanning lung fields &amp; pleura...</span>
+                <RefreshCw size={14} className="animate-spin flex-shrink-0" /><span>Convolutional Neural Net scanning lung fields &amp; pleura...</span>
               </div>
             )}
-
             {xRayResult && (
               <div className="p-3.5 bg-cyan-500/10 border border-cyan-500/30 rounded-xl space-y-2 text-xs">
-                <div className="flex items-center gap-2 font-bold text-cyan-600">
-                  <CheckCircle size={15} />
-                  <span>{xRayResult.confidence}</span>
-                </div>
+                <div className="flex items-center gap-2 font-bold text-cyan-600"><CheckCircle size={15} /><span>{xRayResult.confidence}</span></div>
                 <p className="text-slate-300"><b>Findings:</b> {xRayResult.findings}</p>
                 <p className="text-slate-400 text-[11px]"><b>Recommendation:</b> {xRayResult.recommendation}</p>
               </div>
             )}
-
-            <button onClick={() => setShowXRayModal(false)} className="w-full py-2.5 bg-[#0B4EA2] text-white font-bold rounded-xl text-xs hover:bg-blue-700 transition mt-2">
-              Close Radiograph Analysis
-            </button>
+            <button onClick={() => setShowXRayModal(false)} className="w-full py-2.5 bg-[#0B4EA2] text-white font-bold rounded-xl text-xs hover:bg-blue-700 transition mt-2">Close Radiograph Analysis</button>
           </div>
         </div>
       )}
@@ -1858,42 +1899,25 @@ export default function HealthPulseSystem() {
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className={`rounded-3xl shadow-2xl max-w-2xl w-full p-4 md:p-6 space-y-4 border ${cardTheme}`}>
             <div className="flex justify-between items-center border-b border-slate-500/20 pb-3">
-              <h3 className="font-bold text-sm text-purple-400 flex items-center gap-1.5">
-                <Video size={16} /> Live Tele-Consultation: {selectedPatient?.fullName || "Patient"}
-              </h3>
-              <button onClick={() => setShowTeleModal(false)} className="text-slate-400 hover:text-slate-100">
-                <X size={18} />
-              </button>
+              <h3 className="font-bold text-sm text-purple-400 flex items-center gap-1.5"><Video size={16} /> Live Tele-Consultation: {selectedPatient?.fullName || "Patient"}</h3>
+              <button onClick={() => setShowTeleModal(false)} className="text-slate-400 hover:text-slate-100"><X size={18} /></button>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="col-span-1 md:col-span-2 relative bg-slate-950 rounded-2xl h-52 md:h-64 overflow-hidden border border-slate-800 flex items-center justify-center">
                 <div className="text-center space-y-2">
-                  <div className="w-16 h-16 rounded-full bg-blue-600 text-white font-black text-2xl mx-auto flex items-center justify-center shadow-lg animate-pulse">
-                    {selectedPatient?.fullName?.charAt(0) || "P"}
-                  </div>
+                  <div className="w-16 h-16 rounded-full bg-blue-600 text-white font-black text-2xl mx-auto flex items-center justify-center shadow-lg animate-pulse">{selectedPatient?.fullName?.charAt(0) || "P"}</div>
                   <p className="text-xs font-bold text-white">{selectedPatient?.fullName || "Patient"} (Connected)</p>
                   <p className="text-[10px] text-emerald-400 font-mono">WebRTC Encrypted Stream • Latency 24ms</p>
                 </div>
               </div>
-
               <div className="col-span-1 bg-slate-500/10 rounded-2xl p-4 border border-slate-500/20 flex flex-row md:flex-col justify-between md:justify-start gap-4 md:gap-0 md:space-y-3 text-xs">
                 <p className="font-bold text-slate-400 uppercase text-[10px] w-full hidden md:block">Real-Time Vitals</p>
-                <div className="flex-1 md:flex-none">
-                  <span className="text-slate-400 block md:inline text-[10px] md:text-xs">Pulse:</span>
-                  <p className="text-sm md:text-base font-bold text-emerald-500 font-mono">98 bpm</p>
-                </div>
-                <div className="flex-1 md:flex-none border-l md:border-0 border-slate-500/20 pl-4 md:pl-0">
-                  <span className="text-slate-400 block md:inline text-[10px] md:text-xs">SpO2:</span>
-                  <p className="text-sm md:text-base font-bold text-blue-500 font-mono">98%</p>
-                </div>
+                <div className="flex-1 md:flex-none"><span className="text-slate-400 block md:inline text-[10px] md:text-xs">Pulse:</span><p className="text-sm md:text-base font-bold text-emerald-500 font-mono">98 bpm</p></div>
+                <div className="flex-1 md:flex-none border-l md:border-0 border-slate-500/20 pl-4 md:pl-0"><span className="text-slate-400 block md:inline text-[10px] md:text-xs">SpO2:</span><p className="text-sm md:text-base font-bold text-blue-500 font-mono">98%</p></div>
               </div>
             </div>
-
             <div className="flex justify-end pt-2">
-              <button onClick={() => { setShowTeleModal(false); showToast("Telemedicine consultation concluded."); }} className="w-full md:w-auto px-5 py-2.5 bg-red-600 text-white font-bold rounded-xl text-xs hover:bg-red-700 transition text-center">
-                End Consultation
-              </button>
+              <button onClick={() => { setShowTeleModal(false); showToast("Telemedicine consultation concluded."); }} className="w-full md:w-auto px-5 py-2.5 bg-red-600 text-white font-bold rounded-xl text-xs hover:bg-red-700 transition text-center">End Consultation</button>
             </div>
           </div>
         </div>
@@ -1904,31 +1928,18 @@ export default function HealthPulseSystem() {
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className={`rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-4 border ${cardTheme}`}>
             <div className="flex justify-between items-center border-b border-slate-500/20 pb-3">
-              <h3 className="font-bold text-sm text-amber-500 flex items-center gap-1.5">
-                <QrCode size={16} /> Hospital Kiosk: ABHA QR Check-In
-              </h3>
-              <button onClick={() => setShowQrCheckinModal(false)} className="text-slate-400 hover:text-slate-100">
-                <X size={18} />
-              </button>
+              <h3 className="font-bold text-sm text-amber-500 flex items-center gap-1.5"><QrCode size={16} /> Hospital Kiosk: ABHA QR Check-In</h3>
+              <button onClick={() => setShowQrCheckinModal(false)} className="text-slate-400 hover:text-slate-100"><X size={18} /></button>
             </div>
-
             <div className="border-2 border-dashed border-amber-500/30 bg-amber-500/5 rounded-2xl p-6 text-center flex flex-col items-center justify-center space-y-3">
-              <div className="p-3 bg-white rounded-2xl shadow-sm">
-                <QRCodeSVG value="ABHA-CHECKIN-PID-2024-00124" size={120} />
-              </div>
+              <div className="p-3 bg-white rounded-2xl shadow-sm"><QRCodeSVG value="ABHA-CHECKIN-PID-2024-00124" size={120} /></div>
               <p className="text-xs font-bold mt-2">Scan Patient ABHA Mobile App QR</p>
               <p className="text-[11px] text-slate-400">Instant OPD queue check-in &amp; medical history sync</p>
             </div>
-
             {qrScanning ? (
-              <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center gap-2 text-amber-500 text-xs">
-                <RefreshCw size={14} className="animate-spin flex-shrink-0" />
-                <span>Reading ABHA Registry...</span>
-              </div>
+              <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center gap-2 text-amber-500 text-xs"><RefreshCw size={14} className="animate-spin flex-shrink-0" /><span>Reading ABHA Registry...</span></div>
             ) : (
-              <button onClick={handleSimulateQrScan} className="w-full py-2.5 bg-[#0B4EA2] text-white font-bold rounded-xl text-xs hover:bg-blue-700 transition mt-2">
-                Simulate QR Scan (Check-In)
-              </button>
+              <button onClick={handleSimulateQrScan} className="w-full py-2.5 bg-[#0B4EA2] text-white font-bold rounded-xl text-xs hover:bg-blue-700 transition mt-2">Simulate QR Scan (Check-In)</button>
             )}
           </div>
         </div>
@@ -1939,18 +1950,10 @@ export default function HealthPulseSystem() {
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className={`rounded-3xl shadow-2xl max-w-xl w-full p-4 md:p-6 space-y-4 border ${cardTheme}`}>
             <div className="flex justify-between items-center border-b border-slate-500/20 pb-3">
-              <h3 className="font-bold text-sm text-blue-500 flex items-center gap-1.5">
-                <TrendingUp size={16} /> Longitudinal Platelet &amp; Vitals Trends
-              </h3>
-              <button onClick={() => setShowTrendsModal(false)} className="text-slate-400 hover:text-slate-100">
-                <X size={18} />
-              </button>
+              <h3 className="font-bold text-sm text-blue-500 flex items-center gap-1.5"><TrendingUp size={16} /> Longitudinal Platelet &amp; Vitals Trends</h3>
+              <button onClick={() => setShowTrendsModal(false)} className="text-slate-400 hover:text-slate-100"><X size={18} /></button>
             </div>
-
-            <p className="text-xs text-slate-400">
-              Recovery trajectory for <span className="font-bold text-slate-200">{selectedPatient?.fullName || "Patient"}</span>:
-            </p>
-
+            <p className="text-xs text-slate-400">Recovery trajectory for <span className="font-bold text-slate-200">{selectedPatient?.fullName || "Patient"}</span>:</p>
             <div className="space-y-3 pt-2">
               <div className="border border-slate-500/20 rounded-xl p-3 bg-slate-500/5 space-y-2">
                 <span className="text-xs font-bold text-blue-400 block text-center md:text-left">Platelet Trajectory (Normal: 150k - 450k)</span>
@@ -1958,20 +1961,14 @@ export default function HealthPulseSystem() {
                   {historicalTrends.map((h, i) => (
                     <div key={i} className="flex-1 min-w-[40px] flex flex-col items-center gap-1 h-full justify-end">
                       <span className="text-[9px] md:text-[10px] font-mono text-emerald-400 font-bold">{h.platelets}k</span>
-                      <div
-                        className={`w-full rounded-t-lg transition-all ${h.platelets < 150 ? "bg-amber-500" : "bg-emerald-500"}`}
-                        style={{ height: `${(h.platelets / 250) * 100}%` }}
-                      ></div>
+                      <div className={`w-full rounded-t-lg transition-all ${h.platelets < 150 ? "bg-amber-500" : "bg-emerald-500"}`} style={{ height: `${(h.platelets / 250) * 100}%` }}></div>
                       <span className="text-[8px] md:text-[9px] text-slate-400 whitespace-nowrap">{h.date.split(' ')[0]}</span>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-
-            <button onClick={() => setShowTrendsModal(false)} className="w-full py-2.5 bg-[#0B4EA2] text-white font-bold rounded-xl text-xs hover:bg-blue-700 transition mt-2">
-              Close Analytics View
-            </button>
+            <button onClick={() => setShowTrendsModal(false)} className="w-full py-2.5 bg-[#0B4EA2] text-white font-bold rounded-xl text-xs hover:bg-blue-700 transition mt-2">Close Analytics View</button>
           </div>
         </div>
       )}
@@ -1981,25 +1978,18 @@ export default function HealthPulseSystem() {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className={`rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-4 border ${cardTheme}`}>
             <div className="flex justify-between items-center border-b border-slate-500/20 pb-3">
-              <h3 className="font-bold text-sm flex items-center gap-2 text-emerald-500">
-                <Send size={16} /> Instant WhatsApp EHR Dispatch
-              </h3>
-              <button onClick={() => setShowWhatsAppModal(false)} className="text-slate-400 hover:text-slate-100">
-                <X size={18} />
-              </button>
+              <h3 className="font-bold text-sm flex items-center gap-2 text-emerald-500"><Send size={16} /> Instant WhatsApp EHR Dispatch</h3>
+              <button onClick={() => setShowWhatsAppModal(false)} className="text-slate-400 hover:text-slate-100"><X size={18} /></button>
             </div>
-
             <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-xs space-y-2">
               <p className="text-slate-400">Sending to: <span className="font-mono font-bold text-emerald-500">{selectedPatient?.phone}</span></p>
               <div className="bg-emerald-950 text-emerald-100 p-3 rounded-xl font-mono text-[11px] leading-relaxed border border-emerald-800 max-h-40 overflow-y-auto">
                 <p className="font-bold mb-1">Hello {selectedPatient?.fullName || "Patient"},</p>
                 <p>Prescription in {rxLanguage.toUpperCase()}:</p>
-                {rxTranslations[rxLanguage].plan.map((t, idx) => (
-                  <p key={idx} className="mt-1">- {t}</p>
-                ))}
+                {rxTranslations[rxLanguage].plan.map((t, idx) => (<p key={idx} className="mt-1">- {t}</p>))}
               </div>
             </div>
-
+            
             <button onClick={() => { setShowWhatsAppModal(false); showToast(`Prescription sent to ${selectedPatient?.fullName || "Patient"}'s WhatsApp!`); }} className="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs hover:bg-emerald-700 transition mt-2">
               Send WhatsApp Message Now
             </button>
