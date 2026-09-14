@@ -77,7 +77,7 @@ export default function HealthPulseSystem() {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   const [currentScreen, setCurrentScreen] = useState<
-    "dashboard" | "patients" | "registration" | "casetaking" | "suggestions" | "history" | "report" | "appointments" | "settings" | "audit" | "patient-portal" | "patient-view-rx" | "login" | "signup" | "forgot-password" | "user-management" | "profile" | "inventory" | "bed-management" | "announcements"
+    "dashboard" | "patients" | "registration" | "casetaking" | "suggestions" | "history" | "report" | "appointments" | "settings" | "audit" | "patient-portal" | "patient-view-rx" | "login" | "signup" | "forgot-password" | "user-management" | "profile" | "inventory" | "bed-management" | "announcements" | "kiosk"
   >("login");
 
   const [signupRole, setSignupRole] = useState("patient");
@@ -402,6 +402,50 @@ export default function HealthPulseSystem() {
     }
   };
 
+  // --- KIOSK STATE MANAGEMENT ---
+  const [kioskStep, setKioskStep] = useState(1);
+  const [kioskLang, setKioskLang] = useState<"en" | "bn" | "hi">("en");
+  const [kioskAbha, setKioskAbha] = useState("");
+  const [kioskPatient, setKioskPatient] = useState<any>(null);
+  const [kioskInterviewMode, setKioskInterviewMode] = useState<"Allopathy" | "Ayush">("Allopathy");
+  const [kioskVoiceNotes, setKioskVoiceNotes] = useState("");
+  const [kioskIsRecording, setKioskIsRecording] = useState(false);
+
+  const startKioskRecording = () => {
+    if (!recognitionRef.current) { alert("Please use Google Chrome for Speech-to-Text Dictation."); return; }
+    if (kioskIsRecording) {
+      recognitionRef.current.stop(); setKioskIsRecording(false); clearInterval(timerRef.current);
+    } else {
+      recognitionRef.current.lang = kioskLang === "bn" ? "bn-IN" : kioskLang === "hi" ? "hi-IN" : "en-IN";
+      recognitionRef.current.onresult = (event: any) => {
+        let chunk = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) { if (event.results[i].isFinal) chunk += event.results[i][0].transcript + " "; }
+        if (chunk) setKioskVoiceNotes((prev) => prev + chunk.trim() + " ");
+      };
+      try {
+        recognitionRef.current.start(); setKioskIsRecording(true);
+      } catch (err) { console.error("Recording error:", err); }
+    }
+  };
+
+  const handleKioskVerify = () => {
+    if(!kioskAbha) { showToast("Please enter ABHA ID"); return; }
+    const p = patientList.find(pat => pat.abhaId.includes(kioskAbha) || pat.phone.includes(kioskAbha)) || patientList[0];
+    setKioskPatient(p);
+    setKioskStep(2); // Move to consent
+  };
+
+  const playKioskAudioConsent = () => {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    let text = "Your data will be securely saved according to ABDM and DPDP Act 2026. Do you consent?";
+    if (kioskLang === "bn") text = "আপনার তথ্য ABDM এবং DPDP Act 2026 অনুযায়ী সুরক্ষিতভাবে সেভ করা হবে। আপনি কি রাজি?";
+    if (kioskLang === "hi") text = "आपका डेटा ABDM और DPDP अधिनियम 2026 के अनुसार सुरक्षित रूप से सेव किया जाएगा। क्या आप सहमत हैं?";
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = kioskLang === "bn" ? "bn-IN" : kioskLang === "hi" ? "hi-IN" : "en-IN";
+    window.speechSynthesis.speak(utterance);
+  };
+
   const handleRunAI = async () => {
     setLoadingAI(true);
     const combinedNotes = clinicalTabs.map((t) => `${t}: ${tabNotes[t]}`).join("\n");
@@ -560,7 +604,157 @@ export default function HealthPulseSystem() {
   const headerTheme = darkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200";
 
   // =========================================================================
-  // 1. AUTHENTICATION SCREENS
+  // 1A. KIOSK SCREEN (NEW)
+  // =========================================================================
+  if (currentScreen === "kiosk") {
+    return (
+      <div className={`min-h-screen flex flex-col font-sans ${themeClass}`}>
+        <header className={`p-4 border-b flex justify-between items-center shadow-sm ${headerTheme}`}>
+          <div className="flex items-center gap-2 font-bold text-xl text-[#0B4EA2]">
+            <Activity size={24} /> HealthPulse Kiosk
+          </div>
+          <div className="flex items-center gap-3">
+            <select value={kioskLang} onChange={(e) => setKioskLang(e.target.value as any)} className={`p-2 rounded-xl border text-sm font-bold ${darkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-slate-100 border-slate-300"}`}>
+              <option value="en">English</option><option value="bn">বাংলা (Bengali)</option><option value="hi">हिन्दी (Hindi)</option>
+            </select>
+            <button onClick={() => setDarkMode(!darkMode)} className={`p-2 rounded-xl border ${darkMode ? "bg-slate-800 border-slate-700 text-amber-300" : "bg-slate-100 border-slate-300"}`}>
+              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <button onClick={() => setCurrentScreen("login")} className="ml-2 text-sm text-slate-400 hover:text-red-500 font-bold flex items-center gap-1">
+              <LogOut size={16}/> Exit
+            </button>
+          </div>
+        </header>
+
+        <main className="flex-1 flex items-center justify-center p-4">
+          <div className={`max-w-2xl w-full rounded-3xl shadow-2xl border p-8 ${cardTheme}`}>
+            {kioskStep === 1 && (
+              <div className="space-y-6 text-center animate-fade-in">
+                <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <User size={40} />
+                </div>
+                <h1 className="text-3xl font-black text-[#0B4EA2]">
+                  {kioskLang === 'bn' ? 'স্বাগতম! আপনার চেক-ইন শুরু করুন' : kioskLang === 'hi' ? 'स्वागत है! अपना चेक-इन शुरू करें' : "Welcome! Let's get you checked in."}
+                </h1>
+                <p className="text-slate-500 font-medium text-lg">
+                  {kioskLang === 'bn' ? 'আপনার ABHA আইডি টাইপ করুন বা স্ক্যান করুন' : kioskLang === 'hi' ? 'अपनी आभा आईडी दर्ज करें या स्कैन करें' : 'Please scan your ABHA card or enter the ID below.'}
+                </p>
+                <div className="pt-4 max-w-sm mx-auto space-y-4">
+                  <input type="text" placeholder="12-3456-7890-XXXX" value={kioskAbha} onChange={(e) => setKioskAbha(e.target.value)} className={`w-full text-center text-xl tracking-widest font-mono p-4 border-2 rounded-2xl focus:outline-none focus:border-blue-500 ${darkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-slate-50 border-slate-300"}`} />
+                  <div className="flex gap-3">
+                    <button onClick={handleKioskVerify} className="flex-1 bg-[#0B4EA2] text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-800 shadow-md flex items-center justify-center gap-2"><Search size={20}/> Verify ABHA</button>
+                    <button onClick={() => showToast("Camera Opening...")} className="flex-1 bg-amber-500 text-white py-4 rounded-2xl font-bold text-lg hover:bg-amber-600 shadow-md flex items-center justify-center gap-2"><QrCode size={20}/> Scan QR</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {kioskStep === 2 && (
+              <div className="space-y-6 text-center animate-fade-in">
+                <div className="flex justify-between items-center mb-6 border-b pb-4">
+                  <div className="text-left">
+                    <p className="text-sm text-slate-400 font-bold uppercase tracking-wider">Patient Found</p>
+                    <h2 className="text-2xl font-black">{kioskPatient?.fullName || "Patient"}</h2>
+                  </div>
+                  <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center"><CheckCircle size={28}/></div>
+                </div>
+                <div className="bg-slate-500/10 border border-slate-500/20 p-6 rounded-2xl space-y-4">
+                  <ShieldCheck size={40} className="mx-auto text-blue-500" />
+                  <h3 className="text-xl font-bold">
+                    {kioskLang === 'bn' ? 'তথ্য সুরক্ষা সম্মতি (ABDM)' : kioskLang === 'hi' ? 'डेटा सुरक्षा सहमति' : 'Data Privacy Consent (ABDM)'}
+                  </h3>
+                  <p className="text-slate-500">
+                    {kioskLang === 'bn' ? 'আপনার দেওয়া তথ্য শুধুমাত্র আপনার চিকিৎসার জন্য ব্যবহৃত হবে এবং DPDP Act 2026 অনুযায়ী সুরক্ষিত থাকবে।' : kioskLang === 'hi' ? 'आपकी जानकारी का उपयोग केवल आपके इलाज के लिए किया जाएगा और सुरक्षित रखा जाएगा।' : 'Your medical data will only be used for clinical purposes and secured as per DPDP Act 2026.'}
+                  </p>
+                  <button onClick={playKioskAudioConsent} className="mx-auto flex items-center justify-center gap-2 text-blue-500 font-bold bg-blue-500/10 px-4 py-2 rounded-full hover:bg-blue-500/20 transition"><Volume2 size={18}/> Play Audio Prompt</button>
+                </div>
+                <button onClick={() => setKioskStep(3)} className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-emerald-700 shadow-md flex items-center justify-center gap-2"><CheckCircle size={20}/> I Consent & Continue</button>
+              </div>
+            )}
+
+            {kioskStep === 3 && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-black text-[#0B4EA2]">
+                    {kioskLang === 'bn' ? 'কী সমস্যা হচ্ছে বলুন' : kioskLang === 'hi' ? 'अपनी समस्या बताएं' : 'Tell us your symptoms'}
+                  </h2>
+                  <p className="text-slate-500 mt-1">Our AI will create a summary for the doctor.</p>
+                </div>
+
+                <div className={`flex p-1 rounded-xl mb-6 ${darkMode ? "bg-slate-800" : "bg-slate-100"}`}>
+                  <button onClick={() => setKioskInterviewMode('Allopathy')} className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-lg transition ${kioskInterviewMode === 'Allopathy' ? 'bg-white text-[#0B4EA2] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><Stethoscope size={18} /> Allopathy Mode</button>
+                  <button onClick={() => setKioskInterviewMode('Ayush')} className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-lg transition ${kioskInterviewMode === 'Ayush' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><Utensils size={18} /> AYUSH (Ayurveda)</button>
+                </div>
+
+                <div className="border border-blue-500/30 bg-blue-500/5 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4">
+                  <button onClick={startKioskRecording} className={`w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition ${kioskIsRecording ? "bg-red-500 text-white animate-pulse" : "bg-[#0B4EA2] text-white hover:bg-blue-800"}`}>
+                    {kioskIsRecording ? <Square size={32} /> : <Mic size={32} />}
+                  </button>
+                  <div>
+                    <p className="font-bold text-lg">{kioskIsRecording ? "Listening..." : "Tap the Mic and Speak"}</p>
+                    <p className="text-slate-500 text-sm">{kioskLang === 'bn' ? 'বাংলায় বলুন' : kioskLang === 'hi' ? 'हिंदी में बोलें' : 'Speak in English'}</p>
+                  </div>
+                </div>
+
+                {kioskVoiceNotes && (
+                  <div className="bg-slate-500/10 p-4 rounded-xl border border-slate-500/20">
+                    <p className="text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">AI Transcript:</p>
+                    <p className="text-sm italic">{kioskVoiceNotes}</p>
+                  </div>
+                )}
+
+                {kioskInterviewMode === 'Ayush' && (
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl text-sm">
+                    <p className="font-bold text-emerald-700 mb-2 flex items-center gap-2"><Utensils size={16}/> Dashavidha Pariksha (Ayurveda)</p>
+                    <p className="text-slate-600 dark:text-slate-300 text-xs">AI is actively analyzing your Prakriti (constitution), Ahara (Diet), and Vihara (Lifestyle) from your speech.</p>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4 pt-4">
+                  <button onClick={() => setKioskStep(4)} className="py-4 border-2 border-slate-300 rounded-2xl font-bold text-slate-600 hover:bg-slate-100 flex items-center justify-center gap-2"><Camera size={18}/> Upload Reports</button>
+                  <button onClick={() => setKioskStep(5)} className="py-4 bg-[#0B4EA2] text-white rounded-2xl font-bold hover:bg-blue-800 shadow-md flex items-center justify-center gap-2">Finish & Submit <ChevronRight size={18}/></button>
+                </div>
+              </div>
+            )}
+
+            {kioskStep === 4 && (
+              <div className="space-y-6 text-center animate-fade-in">
+                <h2 className="text-2xl font-black text-[#0B4EA2]">Upload Medical Records</h2>
+                <p className="text-slate-500">Scan your old handwritten prescriptions or blood test reports.</p>
+                <div className="border-2 border-dashed border-blue-500/40 bg-blue-500/5 rounded-3xl p-10 cursor-pointer hover:bg-blue-500/10 transition">
+                  <FileUp size={48} className="mx-auto text-blue-500 mb-4" />
+                  <p className="font-bold text-lg mb-1">Tap to Open Camera</p>
+                  <p className="text-sm text-slate-400">AI will read and organize the documents automatically.</p>
+                </div>
+                <div className="flex gap-4 pt-4">
+                  <button onClick={() => setKioskStep(3)} className="flex-1 py-4 border-2 rounded-2xl font-bold hover:bg-slate-50">Back</button>
+                  <button onClick={() => { showToast("Documents processed via AI OCR"); setKioskStep(5); }} className="flex-1 py-4 bg-[#0B4EA2] text-white rounded-2xl font-bold hover:bg-blue-800 shadow-md">Done Uploading</button>
+                </div>
+              </div>
+            )}
+
+            {kioskStep === 5 && (
+              <div className="space-y-6 text-center animate-fade-in py-8">
+                <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle size={48} />
+                </div>
+                <h1 className="text-3xl font-black text-emerald-600 mb-2">You're All Set!</h1>
+                <p className="text-slate-500 text-lg">Your structured medical history has been securely sent to Dr. Ananya Sharma's dashboard.</p>
+                <div className="bg-slate-500/10 p-4 rounded-xl max-w-sm mx-auto my-6 border border-slate-500/20">
+                  <p className="font-bold text-lg text-[#0B4EA2]">Queue Number: 14</p>
+                  <p className="text-sm text-slate-500 mt-1">Please wait in the OPD waiting area.</p>
+                </div>
+                <button onClick={() => { setKioskStep(1); setKioskAbha(""); setKioskVoiceNotes(""); setCurrentScreen("login"); }} className="px-8 py-4 bg-[#0B4EA2] text-white rounded-2xl font-bold text-lg hover:bg-blue-800 shadow-md">Return to Home</button>
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // 1B. AUTHENTICATION SCREENS
   // =========================================================================
   if (!isLoggedIn) {
     if (currentScreen === "signup") {
@@ -665,6 +859,13 @@ export default function HealthPulseSystem() {
             </div>
             <button type="submit" className="w-full py-3 bg-[#0B4EA2] text-white font-bold rounded-xl hover:bg-blue-700 shadow-md text-sm mt-2">Sign In as {authRoleTab.toUpperCase()}</button>
           </form>
+          
+          <div className="mt-6 pt-4 border-t border-slate-500/20">
+            <button onClick={() => setCurrentScreen("kiosk")} className="w-full py-3 bg-emerald-100 text-emerald-700 font-bold rounded-xl hover:bg-emerald-200 border border-emerald-200 flex items-center justify-center gap-2 transition text-sm">
+              <Scan size={18} /> Patient Self-Check-in Kiosk
+            </button>
+          </div>
+
           <div className="mt-4 text-center"><p className="text-xs text-slate-500 font-semibold">Don't have an account? <button onClick={() => setCurrentScreen("signup")} className="text-[#0B4EA2] hover:underline font-bold">Sign up here</button></p></div>
         </div>
       </div>
@@ -689,7 +890,6 @@ export default function HealthPulseSystem() {
               </div>
               <button onClick={() => window.print()} className="text-xs font-semibold py-2 px-4 rounded-xl border hover:bg-slate-500/10 flex items-center gap-2"><Printer size={15} /> Print</button>
               <button onClick={() => window.print()} className="text-xs font-semibold py-2 px-4 rounded-xl bg-[#0B4EA2] text-white hover:bg-blue-700 flex items-center gap-2"><Download size={15} /> Download PDF</button>
-              {/* UPDATED LISTEN BUTTON FOR PATIENT */}
               <button onClick={playPatientRxAudio} className={`text-xs font-semibold py-2 px-4 rounded-xl flex items-center gap-2 transition shadow-sm ${isSpeakingRx ? "bg-red-100 text-red-700 hover:bg-red-200 border border-red-200" : "bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-200"}`}>
                 {isSpeakingRx ? <Square size={15} /> : <Volume2 size={15} />} 
                 {isSpeakingRx ? "Stop Reading" : "Listen"}
@@ -758,26 +958,20 @@ export default function HealthPulseSystem() {
                 </div>
               </div>
 
-              {/* QUICK ACTIONS MENU WITHOUT PAYMENT */}
               <div className={`rounded-2xl border p-4 md:p-6 shadow-sm space-y-3 ${cardTheme}`}>
                 <h4 className="font-bold text-xs uppercase tracking-wider mb-2 text-slate-500">Quick Actions</h4>
-                
                 <button onClick={() => setCurrentScreen("patient-view-rx")} className="w-full p-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 font-bold flex items-center justify-between transition text-xs border border-blue-500/10">
                   <span className="flex items-center gap-2.5"><FileText size={16} /> View Digital Prescription</span><ChevronRight size={14} />
                 </button>
-                
                 <button onClick={() => setShowHealthCardModal(true)} className="w-full p-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 font-bold flex items-center justify-between transition text-xs border border-amber-500/10">
                   <span className="flex items-center gap-2.5"><CreditCard size={16} /> Digital Health ID Card</span><ChevronRight size={14} />
                 </button>
-                
                 <button onClick={() => setShowNurseBotModal(true)} className="w-full p-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 font-bold flex items-center justify-between transition text-xs border border-purple-500/10">
                   <span className="flex items-center gap-2.5"><Bot size={16} /> AI Nurse Follow-Up Bot</span><ChevronRight size={14} />
                 </button>
-                
                 <button onClick={() => setShowReminderModal(true)} className="w-full p-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 font-bold flex items-center justify-between transition text-xs border border-emerald-500/10">
                   <span className="flex items-center gap-2.5"><Activity size={16} /> Medication Reminders</span><ChevronRight size={14} />
                 </button>
-                
                 <button onClick={() => setShowBookModal(true)} className="w-full p-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 font-bold flex items-center justify-between transition text-xs border border-rose-500/10">
                   <span className="flex items-center gap-2.5"><Calendar size={16} /> Book Follow-Up</span><ChevronRight size={14} />
                 </button>
@@ -802,7 +996,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* Patient Profile */}
         {currentScreen === "profile" && (
           <div className="max-w-3xl mx-auto p-4 md:p-8 mt-4">
              <button onClick={() => setCurrentScreen("patient-portal")} className="text-xs font-bold text-blue-500 hover:underline flex items-center gap-1.5 mb-4"><ArrowLeft size={16} /> Back to Dashboard</button>
@@ -826,7 +1019,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* Modal: Health Card */}
         {showHealthCardModal && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
             <div className={`rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-4 border ${cardTheme}`}>
@@ -844,7 +1036,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* Modal: AI Nurse */}
         {showNurseBotModal && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
             <div className={`rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-4 border ${cardTheme}`}>
@@ -864,7 +1055,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* Modal: Reminders */}
         {showReminderModal && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
             <div className={`rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4 border ${cardTheme}`}>
@@ -880,7 +1070,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* Dynamic Booking Modal */}
         {showBookModal && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
             <div className={`rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4 border ${cardTheme}`}>
@@ -907,7 +1096,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* Modal: Lab Results */}
         {showLabModal && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
             <div className={`rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4 border ${cardTheme}`}>
@@ -933,7 +1121,6 @@ export default function HealthPulseSystem() {
         <div className="fixed top-5 right-5 z-50 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-2 border border-slate-700 animate-fade-in no-print"><CheckCircle size={16} className="text-emerald-400" /><span>{toastMessage}</span></div>
       )}
 
-      {/* Dynamic Sidebar */}
       <aside className="w-full md:w-64 h-auto md:h-full bg-[#0B4EA2] text-white flex flex-col justify-between flex-shrink-0 shadow-lg no-print overflow-y-auto">
         <div>
           <div className="p-4 md:p-5 flex items-center gap-3 border-b border-blue-800/80">
@@ -1018,7 +1205,6 @@ export default function HealthPulseSystem() {
           </div>
         </header>
 
-        {/* ADMIN DASHBOARD */}
         {currentScreen === "dashboard" && currentUser?.role === "admin" && (
           <div className="p-4 md:p-6 space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1072,7 +1258,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* DOCTOR DASHBOARD */}
         {currentScreen === "dashboard" && currentUser?.role === "doctor" && (
           <div className="p-4 md:p-6 space-y-6">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1147,7 +1332,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* ADMIN: USER MANAGEMENT */}
         {currentScreen === "user-management" && currentUser?.role === "admin" && (
           <div className="p-4 md:p-6 space-y-6">
             <div className={`max-w-6xl mx-auto rounded-2xl border shadow-sm p-4 md:p-6 space-y-5 ${cardTheme}`}>
@@ -1209,7 +1393,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* ADMIN: PHARMACY INVENTORY */}
         {currentScreen === "inventory" && currentUser?.role === "admin" && (
           <div className="p-4 md:p-6 space-y-6">
             <div className={`max-w-6xl mx-auto rounded-2xl border shadow-sm p-4 md:p-6 space-y-5 ${cardTheme}`}>
@@ -1249,7 +1432,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* ADMIN: BED MANAGEMENT */}
         {currentScreen === "bed-management" && currentUser?.role === "admin" && (
           <div className="p-4 md:p-6 space-y-6">
             <div className={`max-w-6xl mx-auto rounded-2xl border shadow-sm p-4 md:p-6 space-y-5 ${cardTheme}`}>
@@ -1281,7 +1463,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* ADMIN: GLOBAL ANNOUNCEMENTS */}
         {currentScreen === "announcements" && currentUser?.role === "admin" && (
           <div className="p-4 md:p-6 space-y-6">
             <div className={`max-w-3xl mx-auto rounded-2xl border shadow-sm p-4 md:p-6 space-y-5 ${cardTheme}`}>
@@ -1307,7 +1488,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* Casetaking Screen */}
         {currentScreen === "casetaking" && (
           <div className="p-4 md:p-6 flex flex-col gap-4">
             <div className={`p-4 rounded-xl border flex flex-col lg:flex-row items-start lg:items-center justify-between shadow-sm gap-4 ${cardTheme}`}>
@@ -1451,7 +1631,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* AI Suggestions Screen */}
         {currentScreen === "suggestions" && (
           <div className="p-4 md:p-6 space-y-5">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
@@ -1480,7 +1659,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* Report / Rx Generation Screen */}
         {currentScreen === "report" && currentUser?.role === "doctor" && (
           <div className="p-4 md:p-6">
             <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -1570,7 +1748,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* Patients Directory */}
         {currentScreen === "patients" && (
           <div className="p-4 md:p-6 space-y-4">
             <div className={`p-4 md:p-5 rounded-2xl border shadow-sm space-y-4 ${cardTheme}`}>
@@ -1599,7 +1776,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* Register New Patient Form */}
         {currentScreen === "registration" && (
           <div className="p-4 md:p-6">
             <div className={`max-w-4xl mx-auto rounded-2xl border shadow-sm p-4 md:p-6 space-y-5 ${cardTheme}`}>
@@ -1662,7 +1838,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* Appointments Queue Screen */}
         {currentScreen === "appointments" && (
           <div className="p-4 md:p-6 space-y-4">
             <div className={`p-4 md:p-5 rounded-xl border shadow-sm space-y-3 ${cardTheme}`}>
@@ -1682,7 +1857,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* Encounter Records Screen */}
         {currentScreen === "history" && (
           <div className="p-4 md:p-6 space-y-4">
             <div className={`p-4 md:p-5 rounded-xl border shadow-sm ${cardTheme}`}>
@@ -1702,7 +1876,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* Admin Audit Log Viewer */}
         {currentScreen === "audit" && (
           <div className="p-4 md:p-6 space-y-6">
             <div className={`max-w-6xl mx-auto rounded-2xl border shadow-sm p-4 md:p-6 space-y-5 ${cardTheme}`}>
@@ -1754,7 +1927,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* Admin Settings Screen */}
         {currentScreen === "settings" && (
           <div className="p-4 md:p-6">
             <div className={`max-w-5xl mx-auto rounded-2xl border shadow-sm p-4 md:p-6 space-y-6 ${cardTheme}`}>
@@ -1819,7 +1991,6 @@ export default function HealthPulseSystem() {
           </div>
         )}
 
-        {/* Universal Profile Settings Screen */}
         {currentScreen === "profile" && (
           <div className="p-4 md:p-6">
              <div className={`max-w-2xl mx-auto rounded-2xl border shadow-sm p-4 md:p-8 space-y-6 ${cardTheme}`}>
@@ -1863,7 +2034,6 @@ export default function HealthPulseSystem() {
       </main>
 
       {/* DOCTOR/ADMIN MODALS */}
-      {/* AI CHEST X-RAY MODAL */}
       {showXRayModal && (
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className={`rounded-3xl shadow-2xl max-w-lg w-full p-6 space-y-4 border ${cardTheme}`}>
@@ -1894,7 +2064,6 @@ export default function HealthPulseSystem() {
         </div>
       )}
 
-      {/* TELEMEDICINE MODAL */}
       {showTeleModal && (
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className={`rounded-3xl shadow-2xl max-w-2xl w-full p-4 md:p-6 space-y-4 border ${cardTheme}`}>
@@ -1923,7 +2092,6 @@ export default function HealthPulseSystem() {
         </div>
       )}
 
-      {/* QR CHECK-IN MODAL */}
       {showQrCheckinModal && (
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className={`rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-4 border ${cardTheme}`}>
@@ -1945,7 +2113,6 @@ export default function HealthPulseSystem() {
         </div>
       )}
 
-      {/* VITALS TRENDS MODAL */}
       {showTrendsModal && (
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className={`rounded-3xl shadow-2xl max-w-xl w-full p-4 md:p-6 space-y-4 border ${cardTheme}`}>
@@ -1973,7 +2140,6 @@ export default function HealthPulseSystem() {
         </div>
       )}
 
-      {/* WHATSAPP MODAL */}
       {showWhatsAppModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className={`rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-4 border ${cardTheme}`}>
