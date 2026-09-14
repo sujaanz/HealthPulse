@@ -18,16 +18,22 @@ class NLPAnalyzeRequest(BaseModel):
     patient_id: int
     narrative: str
     language: str
+    mode: Optional[str] = "Allopathy"  # Added to support Kiosk Allopathy/Ayush modes
+
+class AyurvedicParameters(BaseModel):
+    prakriti_vikriti: Optional[str] = None
+    ahara_vihara: Optional[str] = None
 
 class StructuredInfo(BaseModel):
     chief_complaint: str
     duration: str
     symptoms: List[str]
+    ayurvedic_parameters: Optional[AyurvedicParameters] = None  # Added for Ayurveda mode
     past_history: str
     family_history: str
     medication_history: str
     allergy_history: str
-    personal_history: str
+    personal_history: Optional[str] = "Non-smoker, desk worker"
 
 class MissingInfo(BaseModel):
     is_missing: bool
@@ -38,7 +44,7 @@ class CDSInsights(BaseModel):
     differential_considerations: List[str]
     red_flag_alerts: List[str]
     relevant_investigations: List[str]
-    follow_up_prompts: List[str]
+    follow_up_prompts: Optional[List[str]] = []
 
 class NLPAnalyzeResponse(BaseModel):
     structured_info: StructuredInfo
