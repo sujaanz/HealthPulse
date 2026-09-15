@@ -604,147 +604,147 @@ export default function HealthPulseSystem() {
   const headerTheme = darkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200";
 
   // =========================================================================
-  // 1A. KIOSK SCREEN (NEW)
+  // 1A. KIOSK SCREEN (MOBILE OPTIMIZED UI)
   // =========================================================================
   if (currentScreen === "kiosk") {
     return (
       <div className={`min-h-screen flex flex-col font-sans ${themeClass}`}>
-        <header className={`p-4 border-b flex justify-between items-center shadow-sm ${headerTheme}`}>
-          <div className="flex items-center gap-2 font-bold text-xl text-[#0B4EA2]">
-            <Activity size={24} /> HealthPulse Kiosk
+        <header className={`p-3 sm:p-4 border-b flex justify-between items-center shadow-sm ${headerTheme}`}>
+          <div className="flex items-center gap-2 font-bold text-base sm:text-xl text-[#0B4EA2]">
+            <Activity size={20} /> HealthPulse Kiosk
           </div>
-          <div className="flex items-center gap-3">
-            <select value={kioskLang} onChange={(e) => setKioskLang(e.target.value as any)} className={`p-2 rounded-xl border text-sm font-bold ${darkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-slate-100 border-slate-300"}`}>
-              <option value="en">English</option><option value="bn">বাংলা (Bengali)</option><option value="hi">हिन्दी (Hindi)</option>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <select value={kioskLang} onChange={(e) => setKioskLang(e.target.value as any)} className={`p-1.5 sm:p-2 rounded-xl border text-xs sm:text-sm font-bold ${darkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-slate-100 border-slate-300"}`}>
+              <option value="en">English</option><option value="bn">বাংলা</option><option value="hi">हिन्दी</option>
             </select>
             <button onClick={() => setDarkMode(!darkMode)} className={`p-2 rounded-xl border ${darkMode ? "bg-slate-800 border-slate-700 text-amber-300" : "bg-slate-100 border-slate-300"}`}>
-              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+              {darkMode ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-            <button onClick={() => setCurrentScreen("login")} className="ml-2 text-sm text-slate-400 hover:text-red-500 font-bold flex items-center gap-1">
-              <LogOut size={16}/> Exit
+            <button onClick={() => setCurrentScreen("login")} className="text-xs sm:text-sm text-slate-400 hover:text-red-500 font-bold flex items-center gap-1">
+              <LogOut size={16}/> <span className="hidden sm:inline">Exit</span>
             </button>
           </div>
         </header>
 
-        <main className="flex-1 flex items-center justify-center p-4">
-          <div className={`max-w-2xl w-full rounded-3xl shadow-2xl border p-8 ${cardTheme}`}>
+        <main className="flex-1 flex items-center justify-center p-3 sm:p-6">
+          <div className={`max-w-xl w-full rounded-2xl sm:rounded-3xl shadow-xl border p-4 sm:p-8 ${cardTheme}`}>
             {kioskStep === 1 && (
-              <div className="space-y-6 text-center animate-fade-in">
-                <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <User size={40} />
+              <div className="space-y-4 sm:space-y-6 text-center animate-fade-in">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <User size={32} />
                 </div>
-                <h1 className="text-3xl font-black text-[#0B4EA2]">
+                <h1 className="text-xl sm:text-3xl font-black text-[#0B4EA2]">
                   {kioskLang === 'bn' ? 'স্বাগতম! আপনার চেক-ইন শুরু করুন' : kioskLang === 'hi' ? 'स्वागत है! अपना चेक-इन शुरू करें' : "Welcome! Let's get you checked in."}
                 </h1>
-                <p className="text-slate-500 font-medium text-lg">
+                <p className="text-slate-500 font-medium text-xs sm:text-base">
                   {kioskLang === 'bn' ? 'আপনার ABHA আইডি টাইপ করুন বা স্ক্যান করুন' : kioskLang === 'hi' ? 'अपनी आभा आईडी दर्ज करें या स्कैन करें' : 'Please scan your ABHA card or enter the ID below.'}
                 </p>
-                <div className="pt-4 max-w-sm mx-auto space-y-4">
-                  <input type="text" placeholder="12-3456-7890-XXXX" value={kioskAbha} onChange={(e) => setKioskAbha(e.target.value)} className={`w-full text-center text-xl tracking-widest font-mono p-4 border-2 rounded-2xl focus:outline-none focus:border-blue-500 ${darkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-slate-50 border-slate-300"}`} />
-                  <div className="flex gap-3">
-                    <button onClick={handleKioskVerify} className="flex-1 bg-[#0B4EA2] text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-800 shadow-md flex items-center justify-center gap-2"><Search size={20}/> Verify ABHA</button>
-                    <button onClick={() => showToast("Camera Opening...")} className="flex-1 bg-amber-500 text-white py-4 rounded-2xl font-bold text-lg hover:bg-amber-600 shadow-md flex items-center justify-center gap-2"><QrCode size={20}/> Scan QR</button>
+                <div className="pt-2 max-w-sm mx-auto space-y-3">
+                  <input type="text" placeholder="12-3456-7890-XXXX" value={kioskAbha} onChange={(e) => setKioskAbha(e.target.value)} className={`w-full text-center text-lg sm:text-xl tracking-widest font-mono p-3 sm:p-4 border-2 rounded-2xl focus:outline-none focus:border-blue-500 ${darkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-slate-50 border-slate-300"}`} />
+                  <div className="flex flex-col sm:flex-row gap-2.5">
+                    <button onClick={handleKioskVerify} className="flex-1 bg-[#0B4EA2] text-white py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base hover:bg-blue-800 shadow-md flex items-center justify-center gap-2"><Search size={18}/> Verify ABHA</button>
+                    <button onClick={() => showToast("Camera Opening...")} className="flex-1 bg-amber-500 text-white py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base hover:bg-amber-600 shadow-md flex items-center justify-center gap-2"><QrCode size={18}/> Scan QR</button>
                   </div>
                 </div>
               </div>
             )}
 
             {kioskStep === 2 && (
-              <div className="space-y-6 text-center animate-fade-in">
-                <div className="flex justify-between items-center mb-6 border-b pb-4">
+              <div className="space-y-4 sm:space-y-6 text-center animate-fade-in">
+                <div className="flex justify-between items-center mb-4 border-b pb-3">
                   <div className="text-left">
-                    <p className="text-sm text-slate-400 font-bold uppercase tracking-wider">Patient Found</p>
-                    <h2 className="text-2xl font-black">{kioskPatient?.fullName || "Patient"}</h2>
+                    <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Patient Found</p>
+                    <h2 className="text-lg sm:text-2xl font-black">{kioskPatient?.fullName || "Patient"}</h2>
                   </div>
-                  <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center"><CheckCircle size={28}/></div>
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center"><CheckCircle size={22}/></div>
                 </div>
-                <div className="bg-slate-500/10 border border-slate-500/20 p-6 rounded-2xl space-y-4">
-                  <ShieldCheck size={40} className="mx-auto text-blue-500" />
-                  <h3 className="text-xl font-bold">
+                <div className="bg-slate-500/10 border border-slate-500/20 p-4 sm:p-6 rounded-2xl space-y-3">
+                  <ShieldCheck size={32} className="mx-auto text-blue-500" />
+                  <h3 className="text-base sm:text-xl font-bold">
                     {kioskLang === 'bn' ? 'তথ্য সুরক্ষা সম্মতি (ABDM)' : kioskLang === 'hi' ? 'डेटा सुरक्षा सहमति' : 'Data Privacy Consent (ABDM)'}
                   </h3>
-                  <p className="text-slate-500">
+                  <p className="text-slate-500 text-xs sm:text-sm">
                     {kioskLang === 'bn' ? 'আপনার দেওয়া তথ্য শুধুমাত্র আপনার চিকিৎসার জন্য ব্যবহৃত হবে এবং DPDP Act 2026 অনুযায়ী সুরক্ষিত থাকবে।' : kioskLang === 'hi' ? 'आपकी जानकारी का उपयोग केवल आपके इलाज के लिए किया जाएगा और सुरक्षित रखा जाएगा।' : 'Your medical data will only be used for clinical purposes and secured as per DPDP Act 2026.'}
                   </p>
-                  <button onClick={playKioskAudioConsent} className="mx-auto flex items-center justify-center gap-2 text-blue-500 font-bold bg-blue-500/10 px-4 py-2 rounded-full hover:bg-blue-500/20 transition"><Volume2 size={18}/> Play Audio Prompt</button>
+                  <button onClick={playKioskAudioConsent} className="mx-auto flex items-center justify-center gap-1.5 text-blue-500 font-bold bg-blue-500/10 px-3.5 py-1.5 rounded-full hover:bg-blue-500/20 transition text-xs"><Volume2 size={15}/> Play Audio Prompt</button>
                 </div>
-                <button onClick={() => setKioskStep(3)} className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-emerald-700 shadow-md flex items-center justify-center gap-2"><CheckCircle size={20}/> I Consent & Continue</button>
+                <button onClick={() => setKioskStep(3)} className="w-full bg-emerald-600 text-white py-3.5 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base hover:bg-emerald-700 shadow-md flex items-center justify-center gap-2"><CheckCircle size={18}/> I Consent & Continue</button>
               </div>
             )}
 
             {kioskStep === 3 && (
-              <div className="space-y-6 animate-fade-in">
-                <div className="text-center mb-6">
-                  <h2 className="text-2xl font-black text-[#0B4EA2]">
+              <div className="space-y-4 animate-fade-in">
+                <div className="text-center mb-3">
+                  <h2 className="text-lg sm:text-2xl font-black text-[#0B4EA2]">
                     {kioskLang === 'bn' ? 'কী সমস্যা হচ্ছে বলুন' : kioskLang === 'hi' ? 'अपनी समस्या बताएं' : 'Tell us your symptoms'}
                   </h2>
-                  <p className="text-slate-500 mt-1">Our AI will create a summary for the doctor.</p>
+                  <p className="text-slate-500 text-xs sm:text-sm mt-0.5">Our AI will create a summary for the doctor.</p>
                 </div>
 
-                <div className={`flex p-1 rounded-xl mb-6 ${darkMode ? "bg-slate-800" : "bg-slate-100"}`}>
-                  <button onClick={() => setKioskInterviewMode('Allopathy')} className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-lg transition ${kioskInterviewMode === 'Allopathy' ? 'bg-white text-[#0B4EA2] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><Stethoscope size={18} /> Allopathy Mode</button>
-                  <button onClick={() => setKioskInterviewMode('Ayush')} className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-lg transition ${kioskInterviewMode === 'Ayush' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><Utensils size={18} /> AYUSH (Ayurveda)</button>
+                <div className={`flex p-1 rounded-xl mb-3 ${darkMode ? "bg-slate-800" : "bg-slate-100"}`}>
+                  <button onClick={() => setKioskInterviewMode('Allopathy')} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs sm:text-sm font-bold rounded-lg transition ${kioskInterviewMode === 'Allopathy' ? 'bg-white text-[#0B4EA2] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><Stethoscope size={15} /> Allopathy</button>
+                  <button onClick={() => setKioskInterviewMode('Ayush')} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs sm:text-sm font-bold rounded-lg transition ${kioskInterviewMode === 'Ayush' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><Utensils size={15} /> AYUSH</button>
                 </div>
 
-                <div className="border border-blue-500/30 bg-blue-500/5 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4">
-                  <button onClick={startKioskRecording} className={`w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition ${kioskIsRecording ? "bg-red-500 text-white animate-pulse" : "bg-[#0B4EA2] text-white hover:bg-blue-800"}`}>
-                    {kioskIsRecording ? <Square size={32} /> : <Mic size={32} />}
+                <div className="border border-blue-500/30 bg-blue-500/5 rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-center text-center space-y-2.5">
+                  <button onClick={startKioskRecording} className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center shadow-lg transition ${kioskIsRecording ? "bg-red-500 text-white animate-pulse" : "bg-[#0B4EA2] text-white hover:bg-blue-800"}`}>
+                    {kioskIsRecording ? <Square size={26} /> : <Mic size={26} />}
                   </button>
                   <div>
-                    <p className="font-bold text-lg">{kioskIsRecording ? "Listening..." : "Tap the Mic and Speak"}</p>
-                    <p className="text-slate-500 text-sm">{kioskLang === 'bn' ? 'বাংলায় বলুন' : kioskLang === 'hi' ? 'हिंदी में बोलें' : 'Speak in English'}</p>
+                    <p className="font-bold text-sm sm:text-base">{kioskIsRecording ? "Listening..." : "Tap the Mic and Speak"}</p>
+                    <p className="text-slate-500 text-xs">{kioskLang === 'bn' ? 'বাংলায় বলুন' : kioskLang === 'hi' ? 'हिंदी में बोलें' : 'Speak in English'}</p>
                   </div>
                 </div>
 
                 {kioskVoiceNotes && (
-                  <div className="bg-slate-500/10 p-4 rounded-xl border border-slate-500/20">
-                    <p className="text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">AI Transcript:</p>
-                    <p className="text-sm italic">{kioskVoiceNotes}</p>
+                  <div className="bg-slate-500/10 p-3 rounded-xl border border-slate-500/20 text-xs">
+                    <p className="font-bold text-slate-400 mb-0.5 uppercase tracking-wider">AI Transcript:</p>
+                    <p className="italic">{kioskVoiceNotes}</p>
                   </div>
                 )}
 
                 {kioskInterviewMode === 'Ayush' && (
-                  <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl text-sm">
-                    <p className="font-bold text-emerald-700 mb-2 flex items-center gap-2"><Utensils size={16}/> Dashavidha Pariksha (Ayurveda)</p>
-                    <p className="text-slate-600 dark:text-slate-300 text-xs">AI is actively analyzing your Prakriti (constitution), Ahara (Diet), and Vihara (Lifestyle) from your speech.</p>
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl text-xs">
+                    <p className="font-bold text-emerald-700 mb-0.5 flex items-center gap-1"><Utensils size={13}/> Dashavidha Pariksha (Ayurveda)</p>
+                    <p className="text-slate-600 dark:text-slate-300 text-[11px]">AI is actively analyzing Prakriti and Ahara-Vihara from speech.</p>
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-4 pt-4">
-                  <button onClick={() => setKioskStep(4)} className="py-4 border-2 border-slate-300 rounded-2xl font-bold text-slate-600 hover:bg-slate-100 flex items-center justify-center gap-2"><Camera size={18}/> Upload Reports</button>
-                  <button onClick={() => setKioskStep(5)} className="py-4 bg-[#0B4EA2] text-white rounded-2xl font-bold hover:bg-blue-800 shadow-md flex items-center justify-center gap-2">Finish & Submit <ChevronRight size={18}/></button>
+                <div className="grid grid-cols-2 gap-2.5 pt-2">
+                  <button onClick={() => setKioskStep(4)} className="py-3 border-2 border-slate-300 rounded-xl font-bold text-xs text-slate-600 hover:bg-slate-100 flex items-center justify-center gap-1.5"><Camera size={15}/> Upload Reports</button>
+                  <button onClick={() => setKioskStep(5)} className="py-3 bg-[#0B4EA2] text-white rounded-xl font-bold text-xs hover:bg-blue-800 shadow-md flex items-center justify-center gap-1.5">Finish & Submit <ChevronRight size={15}/></button>
                 </div>
               </div>
             )}
 
             {kioskStep === 4 && (
-              <div className="space-y-6 text-center animate-fade-in">
-                <h2 className="text-2xl font-black text-[#0B4EA2]">Upload Medical Records</h2>
-                <p className="text-slate-500">Scan your old handwritten prescriptions or blood test reports.</p>
-                <div className="border-2 border-dashed border-blue-500/40 bg-blue-500/5 rounded-3xl p-10 cursor-pointer hover:bg-blue-500/10 transition">
-                  <FileUp size={48} className="mx-auto text-blue-500 mb-4" />
-                  <p className="font-bold text-lg mb-1">Tap to Open Camera</p>
-                  <p className="text-sm text-slate-400">AI will read and organize the documents automatically.</p>
+              <div className="space-y-4 text-center animate-fade-in">
+                <h2 className="text-xl sm:text-2xl font-black text-[#0B4EA2]">Upload Medical Records</h2>
+                <p className="text-slate-500 text-xs sm:text-sm">Scan your old handwritten prescriptions or blood test reports.</p>
+                <div className="border-2 border-dashed border-blue-500/40 bg-blue-500/5 rounded-2xl p-6 cursor-pointer hover:bg-blue-500/10 transition">
+                  <FileUp size={36} className="mx-auto text-blue-500 mb-2" />
+                  <p className="font-bold text-sm mb-0.5">Tap to Open Camera</p>
+                  <p className="text-[11px] text-slate-400">AI will read and organize documents automatically.</p>
                 </div>
-                <div className="flex gap-4 pt-4">
-                  <button onClick={() => setKioskStep(3)} className="flex-1 py-4 border-2 rounded-2xl font-bold hover:bg-slate-50">Back</button>
-                  <button onClick={() => { showToast("Documents processed via AI OCR"); setKioskStep(5); }} className="flex-1 py-4 bg-[#0B4EA2] text-white rounded-2xl font-bold hover:bg-blue-800 shadow-md">Done Uploading</button>
+                <div className="flex gap-2.5 pt-2">
+                  <button onClick={() => setKioskStep(3)} className="flex-1 py-3 border-2 rounded-xl font-bold text-xs hover:bg-slate-50">Back</button>
+                  <button onClick={() => { showToast("Documents processed via AI OCR"); setKioskStep(5); }} className="flex-1 py-3 bg-[#0B4EA2] text-white rounded-xl font-bold text-xs hover:bg-blue-800 shadow-md">Done Uploading</button>
                 </div>
               </div>
             )}
 
             {kioskStep === 5 && (
-              <div className="space-y-6 text-center animate-fade-in py-8">
-                <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <CheckCircle size={48} />
+              <div className="space-y-4 text-center animate-fade-in py-4">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle size={36} />
                 </div>
-                <h1 className="text-3xl font-black text-emerald-600 mb-2">You're All Set!</h1>
-                <p className="text-slate-500 text-lg">Your structured medical history has been securely sent to Dr. Ananya Sharma's dashboard.</p>
-                <div className="bg-slate-500/10 p-4 rounded-xl max-w-sm mx-auto my-6 border border-slate-500/20">
-                  <p className="font-bold text-lg text-[#0B4EA2]">Queue Number: 14</p>
-                  <p className="text-sm text-slate-500 mt-1">Please wait in the OPD waiting area.</p>
+                <h1 className="text-xl sm:text-2xl font-black text-emerald-600 mb-1">You're All Set!</h1>
+                <p className="text-slate-500 text-xs sm:text-sm">Your structured medical history has been securely sent to Dr. Ananya Sharma's dashboard.</p>
+                <div className="bg-slate-500/10 p-3 rounded-xl max-w-xs mx-auto my-3 border border-slate-500/20">
+                  <p className="font-bold text-sm text-[#0B4EA2]">Queue Number: 14</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Please wait in the OPD waiting area.</p>
                 </div>
-                <button onClick={() => { setKioskStep(1); setKioskAbha(""); setKioskVoiceNotes(""); setCurrentScreen("login"); }} className="px-8 py-4 bg-[#0B4EA2] text-white rounded-2xl font-bold text-lg hover:bg-blue-800 shadow-md">Return to Home</button>
+                <button onClick={() => { setKioskStep(1); setKioskAbha(""); setKioskVoiceNotes(""); setCurrentScreen("login"); }} className="w-full sm:w-auto px-6 py-3 bg-[#0B4EA2] text-white rounded-xl font-bold text-sm hover:bg-blue-800 shadow-md">Return to Home</button>
               </div>
             )}
           </div>
